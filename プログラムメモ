@@ -1,0 +1,86 @@
+LES計算手順
+Init 初期条件
+↓
+時間ループに入る
+↓
+EXTP　前の時刻から次の時刻の予測値を立てる（SMACで比較？）
+↓
+ENERGY　渦粘性MYTの更新　予測値を使う？
+↓
+KBC　境界条件を設定する　運動方程式のために
+↓
+NSE　運動方程式を解く　仮速度の算出
+↓
+SMAC　圧力方程式（式形からすると圧力拡散方程式？）を解いて仮速度を補正
+↓
+次の時間ループで回す
+
+
+
+
+IJKの位置・流速の対応
+I:x方向，流下，U
+J:y方向，鉛直，V
+K:z方向，横断，W
+
+
+
+メモ
+BOUNDARY CONDITION 1458これはLES計算用？
+
+・INIT（7108）
+格子生成，1階微分演算子，2階微分演算子
+LES定数（α，Cs，Ce）→k方程式のため？ENERGYで確認必要！
+初期水深と水位の設定（GL:河床高，SODO:粗度係数，Qin:流量，DEP:マニングの等流水深）
+流速の設定：対数則
+〇1は1つ前の時間のデータ
+〇2は2つ前の時間のデータ
+
+
+・EXTP（8669）
+〇1は1つ前の時間のデータ
+〇2は2つ前の時間のデータ
+〇3は3つ前の時間のデータ（Uのみ書かれているけど要らない？，3次ではなく2次？）
+
+
+・KBC
+重要なのは，nonslipか周期境界どうか
+
+下のコロケート格子のやつはどこでつかわれる？
+UTは鉛直平均流速？（初期条件では少なくともそう）
+ELESとHHの初期条件は以下の通り　HHは等流水深でELESが水面変位？
+HH(I,K)=DEP(I,K)
+ELES(I,K)=0.0
+
+それに付随して水面関係，SSDが水面変動に関する時間発展の誤差量
+ELES(I,K)=ELES(I,K)+SSD(I,K)
+
+!DEPが瞬間水深，ETAが水位？（GLは河床高位置）
+DEP(I,K)=HH(I,K)+ELES(I,K)
+ETA(I,K)=DEP(I,K)+GL(I,K)
+
+!収束計算における誤差量の算出
+ELES1が前の時間の水面変動値
+SSD(I,K)=ELES1(I,K)-DT*(DUDX(I,K)+DWDZ(I,K))-ELES(I,K)
+
+
+!********** COLLOCATE MESH BY SUMO 23/05/25 **********!
+            !∂UH/∂x,∂WH/∂zの計算　中心差分　運動方程式の移流項の計算に使われる？
+ DUDX(I,K)=((UT(I+1,K)+UT(I,K))*(ELES(I+1,K)+HH(I+1,K)+ELES(I,K)+HH(I,K))*0.25 &
+ -(UT(I,K)+UT(I-1,K))*(ELES(I,K)+HH(I,K)+ELES(I-1,K)+HH(I-1,K))*0.25)*GX(I)
+ DWDZ(I,K)=((WT(I,K+1)+WT(I,K))*(ELES(I,K+1)+HH(I,K+1)+ELES(I,K)+HH(I,K))*0.25 &
+ -(WT(I,K)+WT(I,K-1))*(ELES(I,K)+HH(I,K)+ELES(I,K-1)+HH(I,K-1))*0.25)*DZ(K)
+
+ 351    CONTINUE
+
+
+ LOOP(E)= 21  GOSAE=          NaN
+ LOOP(D)=     4  GOSAD=        0.00005
+                         LOOP(UVW)= 21  GOSAQ=                 NaN
+                           ZANSU=          NaN
+ LOOP(P)=   201  GOSAP=            NaN
+
+
+
+
+
