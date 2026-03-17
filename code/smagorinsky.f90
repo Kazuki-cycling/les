@@ -111,13 +111,13 @@
 !C
 !CCCCCCC////// INIT ////////CCCCCC
 !C
-      REAL(8) :: Umm,aaa,bbb,B00    !B0?ï¿½ï¿½?ï¿½ï¿½B00, SUMO23/05/04
+      REAL(8) :: Umm,aaa,bbb,B00    !B0??¿½?¿½??¿½?¿½B00, SUMO23/05/04
 !
 !C----------Original Dimension----------C
       REAL(8) :: RA1(NX+4,NY+4,NZ+4),RA2(NX+4,NY+4,NZ+4)
       REAL(8) :: RA3(NX+4,NY+4,NZ+4),XG(NX+4),YE(NY+4),ZD(NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
 !      REAL(8), allocatable :: &
 !      RA1(:,:,:),RA2(:,:,:),RA3(:,:,:),XG(:),YE(:),ZD(:)   !221027TI
@@ -139,16 +139,16 @@
 !     ,UST(NX+4,NY+4,NZ+4),VST(NX+4,NY+4,NZ+4)&
 !     ,USRT(NX+4,NY+4,NZ+4),VSRT(NX+4,NY+4,NZ+4)&
 !     ,WSRT(NX+4,NY+4,NZ+4),WST(NX+4,NY+4,NZ+4)&
-!     ,OMEX(NX+4,NY+4,NZ+4),OMEY(NX+4,NY+4,NZ+4)&   !GAL?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½OMEX,Y,Z?ï¿½ï¿½?ï¿½ï¿½OMEXG,YG,ZG?ï¿½ï¿½É•ÏX
+!     ,OMEX(NX+4,NY+4,NZ+4),OMEY(NX+4,NY+4,NZ+4)&   !GAL??¿½?¿½??¿½?¿½??¿½?¿½??¿½?¿½OMEX,Y,Z??¿½?¿½??¿½?¿½OMEXG,YG,ZG??¿½?¿½É•ÏX
 !     ,OMEZ(NX+4,NY+4,NZ+4),HKW(NX+4,NY+4,NZ+4)&
 !     ,HKU(NX+4,NY+4,NZ+4),HKV(NX+4,NY+4,NZ+4)&
-!     ,DD1(NX+4,NY+4,NZ+4),DD2(NX+4,NY+4,NZ+4)&   !GAL?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½DD1,2,3?ï¿½ï¿½?ï¿½ï¿½DD1G,2G,3G?ï¿½ï¿½É•ÏX
+!     ,DD1(NX+4,NY+4,NZ+4),DD2(NX+4,NY+4,NZ+4)&   !GAL??¿½?¿½??¿½?¿½??¿½?¿½??¿½?¿½DD1,2,3??¿½?¿½??¿½?¿½DD1G,2G,3G??¿½?¿½É•ÏX
 !     ,DD3(NX+4,NY+4,NZ+4)&
 !     ,AU(NX+4,NY+4,NZ+4),W0(NX+4,NY+4,NZ+4)&
 !     ,AP1(NX+4,NY+4,NZ+4),AP2(NX+4,NY+4,NZ+4)&
 !     ,BTE(NX+4,NY+4,NZ+4),AP3(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       fx(:,:,:,:,:,:),XF(:,:,:,:,:,:) &
@@ -158,11 +158,11 @@
      ,UST(:,:,:),VST(:,:,:)&
      ,USRT(:,:,:),VSRT(:,:,:)&
      ,WSRT(:,:,:),WST(:,:,:)&
-     ,OMEXG(:,:,:),OMEYG(:,:,:)&   !OMEX?ï¿½ï¿½?ï¿½ï¿½OMEXG,OMEY?ï¿½ï¿½?ï¿½ï¿½OMEYG
-     ,OMEZG(:,:,:),HKW(:,:,:)&     !OMEZ?ï¿½ï¿½?ï¿½ï¿½OMEZG
+     ,OMEXG(:,:,:),OMEYG(:,:,:)&   !OMEX??¿½?¿½??¿½?¿½OMEXG,OMEY??¿½?¿½??¿½?¿½OMEYG
+     ,OMEZG(:,:,:),HKW(:,:,:)&     !OMEZ??¿½?¿½??¿½?¿½OMEZG
      ,HKU(:,:,:),HKV(:,:,:)&
-     ,DD1G(:,:,:),DD2G(:,:,:)&     !DD1?ï¿½ï¿½?ï¿½ï¿½DD1G,DD2?ï¿½ï¿½?ï¿½ï¿½DD2G
-     ,DD3G(:,:,:)&                 !DD3?ï¿½ï¿½?ï¿½ï¿½DD3G
+     ,DD1G(:,:,:),DD2G(:,:,:)&     !DD1??¿½?¿½??¿½?¿½DD1G,DD2??¿½?¿½??¿½?¿½DD2G
+     ,DD3G(:,:,:)&                 !DD3??¿½?¿½??¿½?¿½DD3G
      ,AU(:,:,:),W0(:,:,:)&
      ,AP1(:,:,:),AP2(:,:,:)&
      ,BTE(:,:,:),AP3(:,:,:)
@@ -191,7 +191,7 @@
 !     ,ZZM2(NX+4,NY+4,NZ+4),WSQ2(NX+4,NY+4,NZ+4)
 !C
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       XXM(:,:,:),YYM(:,:,:)&
@@ -219,23 +219,23 @@
 !CCCCCCC////// ENERGY ////////CCCCCC
 !C
       REAL(8) :: UA(NX+5),C3
-      REAL(8) :: UKG(NX+4,NY+4,NZ+4),UKE(NX+4,NY+4,NZ+4)    !SAL?ï¿½ï¿½Å‚ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½l?ï¿½ï¿½ÌŽï¿½
-      REAL(8) :: VKG(NX+4,NY+4,NZ+4),VKE(NX+4,NY+4,NZ+4)    !SAL?ï¿½ï¿½Å‚ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½l?ï¿½ï¿½ÌŽï¿½
-      REAL(8) :: MYTGENE(NX+4,NY+4,NZ+4),MYTEENE(NX+4,NY+4,NZ+4)    !SAL?ï¿½ï¿½Å‚ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½l?ï¿½ï¿½ÌŽï¿½
+      REAL(8) :: UKG(NX+4,NY+4,NZ+4),UKE(NX+4,NY+4,NZ+4)    !SAL??¿½?¿½Å‚ï¿½??¿½?¿½??¿½?¿½??¿½?¿½l??¿½?¿½ÌŽï¿½
+      REAL(8) :: VKG(NX+4,NY+4,NZ+4),VKE(NX+4,NY+4,NZ+4)    !SAL??¿½?¿½Å‚ï¿½??¿½?¿½??¿½?¿½??¿½?¿½l??¿½?¿½ÌŽï¿½
+      REAL(8) :: MYTGENE(NX+4,NY+4,NZ+4),MYTEENE(NX+4,NY+4,NZ+4)    !SAL??¿½?¿½Å‚ï¿½??¿½?¿½??¿½?¿½??¿½?¿½l??¿½?¿½ÌŽï¿½
       REAL(8) :: AK0(NX+4,NY+4,NZ+4)
-      REAL(8) :: UK(NX+4,NY+4,NZ+4),VK(NX+4,NY+4,NZ+4),CKC    !SAL?ï¿½ï¿½Å‚ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½l?ï¿½ï¿½ÌŽï¿½
+      REAL(8) :: UK(NX+4,NY+4,NZ+4),VK(NX+4,NY+4,NZ+4),CKC    !SAL??¿½?¿½Å‚ï¿½??¿½?¿½??¿½?¿½??¿½?¿½l??¿½?¿½ÌŽï¿½
 !
 !C----------Original Dimension----------C
-!      REAL(8) ::  HKG(NX+4,NY+4,NZ+4),HKE(NX+4,NY+4,NZ+4)& !HKG?ï¿½ï¿½?ï¿½ï¿½HKGENE?ï¿½ï¿½CHKE?ï¿½ï¿½?ï¿½ï¿½HKEENE
+!      REAL(8) ::  HKG(NX+4,NY+4,NZ+4),HKE(NX+4,NY+4,NZ+4)& !HKG??¿½?¿½??¿½?¿½HKGENE??¿½?¿½CHKE??¿½?¿½??¿½?¿½HKEENE
 !     ,HKGG(NX+4,NY+4,NZ+4),HKEE(NX+4,NY+4,NZ+4)&
-!     ,MYTG(NX+4,NY+4,NZ+4),MYTE(NX+4,NY+4,NZ+4)&   !MYTG?ï¿½ï¿½?ï¿½ï¿½MYTGENE?ï¿½ï¿½CMYTE?ï¿½ï¿½?ï¿½ï¿½MYTEENE
+!     ,MYTG(NX+4,NY+4,NZ+4),MYTE(NX+4,NY+4,NZ+4)&   !MYTG??¿½?¿½??¿½?¿½MYTGENE??¿½?¿½CMYTE??¿½?¿½??¿½?¿½MYTEENE
 !     ,UKG(NX+4,NY+4,NZ+4),UKE(NX+4,NY+4,NZ+4)&
 !     ,VKG(NX+4,NY+4,NZ+4),VKE(NX+4,NY+4,NZ+4)&
 !     ,HK0(NX+4,NY+4,NZ+4),HKN(NX+4,NY+4,NZ+4)&
 !     ,DK(NX+4,NY+4,NZ+4),AK0(NX+4,NY+4,NZ+4)&
 !     ,SK(NX+4,NY+4,NZ+4),CK(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       HKGENE(:,:,:),HKEENE(:,:,:)&
@@ -254,7 +254,7 @@
 !     ,HAMF(NX+4,NY+4,NZ+4)&
 !     ,UUSRK1(NX+4,NY+4,NZ+4),VVSRK1(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       HTEI(:,:,:),TEI1(:,:,:)&
@@ -269,14 +269,14 @@
 !     ,WK(NX+4,NY+4,NZ+4),WSK(NX+4,NY+4,NZ+4)&
 !     ,WKG(NX+4,NY+4,NZ+4),WKE(NX+4,NY+4,NZ+4)&
 !     ,WKD(NX+4,NY+4,NZ+4),CKD(NX+4,NY+4,NZ+4)&
-!     ,HKD(NX+4,NY+4,NZ+4),HKDD(NX+4,NY+4,NZ+4)&            !HKD?ï¿½ï¿½?ï¿½ï¿½HKDENE
-!     ,MYTD(NX+4,NY+4,NZ+4),WCK(NX+4,NY+4,NZ+4)&            !MYTD?ï¿½ï¿½?ï¿½ï¿½MYTDENE
+!     ,HKD(NX+4,NY+4,NZ+4),HKDD(NX+4,NY+4,NZ+4)&            !HKD??¿½?¿½??¿½?¿½HKDENE
+!     ,MYTD(NX+4,NY+4,NZ+4),WCK(NX+4,NY+4,NZ+4)&            !MYTD??¿½?¿½??¿½?¿½MYTDENE
 !     ,HTEP(NX+4,NY+4,NZ+4),HKP(NX+4,NY+4,NZ+4)&
 !     ,UK(NX+4,NY+4,NZ+4),VK(NX+4,NY+4,NZ+4)&
 !     ,USK(NX+4,NY+4,NZ+4),VSK(NX+4,NY+4,NZ+4)&
 !     ,EK(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       UKD(:,:,:),VKD(:,:,:)&
@@ -308,7 +308,7 @@
 !     ,E13(NX+4,NY+4,NZ+4),F13(NX+4,NY+4,NZ+4)&
 !     ,DD1(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
      REAL(8), allocatable :: &
      E11(:,:,:),F11(:,:,:)&
@@ -332,7 +332,7 @@
 !     ,WEA(NX+4,NY+4,NZ+4),WEB(NX+4,NY+4,NZ+4)&
 !     ,WDA(NX+4,NY+4,NZ+4),WDB(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       UGA(:,:,:),UGB(:,:,:)&
@@ -355,7 +355,7 @@
 !     ,SV(NX+4,NY+4,NZ+4),CC2(NX+4,NY+4,NZ+4)&
 !     ,SW(NX+4,NY+4,NZ+4),CC3(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       A0(:,:,:),AP(:,:,:)&
@@ -378,7 +378,7 @@
 !     ,WE(NX+4,NY+4,NZ+4),WEE(NX+4,NY+4,NZ+4)&
 !     ,WD(NX+4,NY+4,NZ+4),WDD(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       UG(:,:,:),VG(:,:,:)&
@@ -397,7 +397,7 @@
 !     ,BOU(NX+4,NY+4,NZ+4),OMEX(NX+4,NY+4,NZ+4)&
 !     ,OMEY(NX+4,NY+4,NZ+4),OMEZ(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       MYTG(:,:,:),HKG(:,:,:)&
@@ -422,7 +422,7 @@
 !!C     &         ,CG2(NX+4,NY+4,NZ+4),CE2(NX+4,NY+4,NZ+4)
 !!C     &         ,UC(NX+4,NY+4,NZ+4),VC(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       FDX(:,:,:),FDY(:,:,:)&
@@ -444,7 +444,7 @@
 !     ,CZ(NX+4,NY+4,NZ+4),CZZ(NX+4,NY+4,NZ+4)&
 !     ,UCP(NX+4,NY+4,NZ+4),RPE(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       SS1(:,:,:),PSI1(:,:,:)&
@@ -478,7 +478,7 @@
 !     ,SALG1(NX+4,NY+4,NZ+4),SALE1(NX+4,NY+4,NZ+4)&
 !     ,SALGG1(NX+4,NY+4,NZ+4),SALEE1(NX+4,NY+4,NZ+4)
 !
-!//////////allocate?ï¿½ï¿½z?ï¿½ï¿½?ï¿½ï¿½É•ÏX//////////!
+!//////////allocate??¿½?¿½z??¿½?¿½??¿½?¿½É•ÏX//////////!
 !
       REAL(8), allocatable :: &
       SALG(:,:,:),SALE(:,:,:)&
@@ -698,11 +698,11 @@
      ,UST(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),VST(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &
      ,USRT(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),VSRT(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &
      ,WSRT(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),WST(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &
-     ,OMEXG(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),OMEYG(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &   !OMEX?ï¿½ï¿½?ï¿½ï¿½OMEXG,OMEY?ï¿½ï¿½?ï¿½ï¿½OMEYG
-     ,OMEZG(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),HKW(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &     !OMEZ?ï¿½ï¿½?ï¿½ï¿½OMEZG
+     ,OMEXG(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),OMEYG(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &   !OMEX??¿½?¿½??¿½?¿½OMEXG,OMEY??¿½?¿½??¿½?¿½OMEYG
+     ,OMEZG(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),HKW(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &     !OMEZ??¿½?¿½??¿½?¿½OMEZG
      ,HKU(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),HKV(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &
-     ,DD1G(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),DD2G(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &     !DD1?ï¿½ï¿½?ï¿½ï¿½DD1G,DD2?ï¿½ï¿½?ï¿½ï¿½DD2G
-     ,DD3G(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &                 !DD3?ï¿½ï¿½?ï¿½ï¿½DD3G
+     ,DD1G(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),DD2G(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &     !DD1??¿½?¿½??¿½?¿½DD1G,DD2??¿½?¿½??¿½?¿½DD2G
+     ,DD3G(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &                 !DD3??¿½?¿½??¿½?¿½DD3G
      ,AU(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),W0(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &
      ,AP1(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),AP2(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &
      ,BTE(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4),AP3(-1:IMAX+4,-1:JMAX+4,-1:KMAX+4) &
@@ -737,7 +737,7 @@
         AG2=(-GG*(RS-RC)/(RS+CM0*RC))*COS(sita0)
         AG3=0.0
         DT1=DT*1.0
-        B00=RC*(1.0+CM0)/(RS+RC*CM0)    !B0?ï¿½ï¿½?ï¿½ï¿½B00, SUMO23/05/04
+        B00=RC*(1.0+CM0)/(RS+RC*CM0)    !B0??¿½?¿½??¿½?¿½B00, SUMO23/05/04
 
 !$OMP PARALLEL
 !$OMP DO
@@ -853,7 +853,7 @@
             DO 600 I=3,IMAX+2
             DO 600 J=3,JMAX+1
 !
-                RE1G(I,J,K)=SQRT(ABS(US(I,J,K)-U(I,J,K))**2 &   !RE1?ï¿½ï¿½?ï¿½ï¿½RE1G, SUMO23/05/04
+                RE1G(I,J,K)=SQRT(ABS(US(I,J,K)-U(I,J,K))**2 &   !RE1??¿½?¿½??¿½?¿½RE1G, SUMO23/05/04
                                 +ABS(VS(I,J,K)-V(I,J,K))**2 &
                                 +ABS(WS(I,J,K)-W(I,J,K))**2) &
                                 *DR/RED
@@ -881,9 +881,9 @@
                 BTE(I,J,K)=18.0*RED/DR**2*RC/(RS+CM0*RC) &
 !                          *(0.650-CM(I,J,K))**(-2.70)
 !                          *(1.0-CM(I,J,K))**(-2.70)
-!                          *(1.0+0.150*RE1G(I,J,K)**0.6870)   !RE1?ï¿½ï¿½?ï¿½ï¿½RE1G, SUMO23/05/04
+!                          *(1.0+0.150*RE1G(I,J,K)**0.6870)   !RE1??¿½?¿½??¿½?¿½RE1G, SUMO23/05/04
                           *(1.0+0.4320*RE1G(I,J,K)**0.6870)  !SUMO23/10/23
-!                          *(1.0+0.150*RE1G(I,J,K))**0.6870   !RE1?ï¿½ï¿½?ï¿½ï¿½RE1G, SUMO23/05/04
+!                          *(1.0+0.150*RE1G(I,J,K))**0.6870   !RE1??¿½?¿½??¿½?¿½RE1G, SUMO23/05/04
 !
  650  CONTINUE
 !
@@ -899,13 +899,13 @@
             DO 700 I=3,IMAX+2
             DO 700 J=3,JMAX+1
 !
-                OMEXG(I,J,K)=RC/(RS+RC*CM0)*CL0* &  !OMEX?ï¿½ï¿½?ï¿½ï¿½OMEXG, SUMO23/05/04
+                OMEXG(I,J,K)=RC/(RS+RC*CM0)*CL0* &  !OMEX??¿½?¿½??¿½?¿½OMEXG, SUMO23/05/04
                             ((W(I,J+1,K)-W(I,J-1,K))*0.50*EY(J) &
                             -(V(I,J,K+1)-V(I,J,K-1))*0.50*DZ(K))
-                OMEYG(I,J,K)=RC/(RS+RC*CM0)*CL0* &  !OMEY?ï¿½ï¿½?ï¿½ï¿½OMEYG, SUMO23/05/04
+                OMEYG(I,J,K)=RC/(RS+RC*CM0)*CL0* &  !OMEY??¿½?¿½??¿½?¿½OMEYG, SUMO23/05/04
                             ((U(I,J,K+1)-U(I,J,K-1))*0.50*DZ(K) &
                             -(W(I+1,J,K)-W(I-1,J,K))*0.50*GX(I))
-                OMEZG(I,J,K)=RC/(RS+RC*CM0)*CL0* &  !OMEZ?ï¿½ï¿½?ï¿½ï¿½OMEZG, SUMO23/05/04
+                OMEZG(I,J,K)=RC/(RS+RC*CM0)*CL0* &  !OMEZ??¿½?¿½??¿½?¿½OMEZG, SUMO23/05/04
                             ((V(I+1,J,K)-V(I-1,J,K))*0.50*GX(I) &
                             -(U(I,J+1,K)-U(I,J-1,K))*0.50*EY(J))
 !C
@@ -944,8 +944,8 @@
 !C
                 TAUP(I,J,K)=DR**2/(18.0*RED)*RS/RC &
                             /(1.0-CM(I,J,K))**(-2.70) &
-!C     &            /(1.0+0.150*RE1G(I,J,K))**0.6870   !RE1?ï¿½ï¿½?ï¿½ï¿½RE1G, SUMO23/05/04
-!                            *(1.0+0.150*RE1G(I,J,K)**0.6870)   !RE1?ï¿½ï¿½?ï¿½ï¿½RE1G, SUMO23/05/04
+!C     &            /(1.0+0.150*RE1G(I,J,K))**0.6870   !RE1??¿½?¿½??¿½?¿½RE1G, SUMO23/05/04
+!                            *(1.0+0.150*RE1G(I,J,K)**0.6870)   !RE1??¿½?¿½??¿½?¿½RE1G, SUMO23/05/04
                             *(1.0+0.4320*RE1G(I,J,K)**0.6870)   !SUMO23/10/23
  750  CONTINUE
 !
@@ -960,9 +960,9 @@
             DO 800 J=3,JMAX+1
 !
                 AU(I,J,K)=18.0*RED/DR**2*RC/(RS+CM0*RC) &
-!                        *(1-CM(I,J,K))**(-2.70)*(1.0+0.150*RE1G(I,J,K)**0.687)   !RE1?ï¿½ï¿½?ï¿½ï¿½RE1G, SUMO23/05/04
+!                        *(1-CM(I,J,K))**(-2.70)*(1.0+0.150*RE1G(I,J,K)**0.687)   !RE1??¿½?¿½??¿½?¿½RE1G, SUMO23/05/04
                         *(1-CM(I,J,K))**(-2.70)*(1.0+0.4320*RE1G(I,J,K)**0.687)   !SUMO23/10/23
-!                        *(1-CM(I,J,K))**(-2.70)*(1.0+0.150*RE1G(I,J,K))**0.687   !RE1?ï¿½ï¿½?ï¿½ï¿½RE1G, SUMO23/05/04
+!                        *(1-CM(I,J,K))**(-2.70)*(1.0+0.150*RE1G(I,J,K))**0.687   !RE1??¿½?¿½??¿½?¿½RE1G, SUMO23/05/04
 !
                 W0(I,J,K)=2.0*PHI/DET(I,J,K) &
                         *SQRT(U(I,J,K)**2+V(I,J,K)**2+W(I,J,K)**2)
@@ -985,11 +985,11 @@
             DO 815 J=3,JMAX+1
 !
             IF (CM(I,J,K).GT.1.0E-7) THEN
-                UUSR(I,J,K)=HKU(I,J,K)*(AU(I,J,K)**2+B00*W0(I,J,K)**2) &    !B0?ï¿½ï¿½?ï¿½ï¿½B00, SUMO23/05/04
+                UUSR(I,J,K)=HKU(I,J,K)*(AU(I,J,K)**2+B00*W0(I,J,K)**2) &    !B0??¿½?¿½??¿½?¿½B00, SUMO23/05/04
                                       /(AU(I,J,K)**2+W0(I,J,K)**2)
-                VVSR(I,J,K)=HKV(I,J,K)*(AU(I,J,K)**2+B00*W0(I,J,K)**2) &    !B0?ï¿½ï¿½?ï¿½ï¿½B00, SUMO23/05/04
+                VVSR(I,J,K)=HKV(I,J,K)*(AU(I,J,K)**2+B00*W0(I,J,K)**2) &    !B0??¿½?¿½??¿½?¿½B00, SUMO23/05/04
                                       /(AU(I,J,K)**2+W0(I,J,K)**2)
-                WWSR(I,J,K)=HKW(I,J,K)*(AU(I,J,K)**2+B00*W0(I,J,K)**2) &    !B0?ï¿½ï¿½?ï¿½ï¿½B00, SUMO23/05/04
+                WWSR(I,J,K)=HKW(I,J,K)*(AU(I,J,K)**2+B00*W0(I,J,K)**2) &    !B0??¿½?¿½??¿½?¿½B00, SUMO23/05/04
                                       /(AU(I,J,K)**2+W0(I,J,K)**2)
             ELSE
                 UUSR(I,J,K)=0.0
@@ -3199,7 +3199,7 @@
         DO 85 K=2,KMAX+3    !K=3,KMAX+2
         DO 85 I=2,IMAX+3
         DO 85 J=2,JMAX+2
-
+            !‘¬“xE”Z“x‚Ì‹óŠÔŒù”z‚ð’†S·•ª‚ÅŽZo
             UKG(I,J,K)=(UK(I+1,J,K)-UK(I-1,J,K))*0.50*GX(I)
             UKE(I,J,K)=(UK(I,J+1,K)-UK(I,J-1,K))*0.50*EY(J)
             UKD(I,J,K)=(UK(I,J,K+1)-UK(I,J,K-1))*0.50*DZ(K)
@@ -3216,6 +3216,7 @@
             CKE(I,J,K)=(CK(I,J+1,K)-CK(I,J-1,K))*0.50*EY(J)
             CKD(I,J,K)=(CK(I,J,K+1)-CK(I,J,K-1))*0.50*DZ(K)
 
+            !GALŠÖŒWH
             TEI1(I,J,K)=18.0*RED/DR**2 &
                         *ABS(CK(I,J,K)/(1.0-CK(I,J,K)) ) &
                        !*(1.0+0.150*RE1ENE(I,J,K)**0.6870)
@@ -3230,7 +3231,7 @@
         DO 1600 K=1,KMAX+4
         DO 1600 I=1,IMAX+4
         DO 1600 J=1,JMAX+3
-
+            !DET‚ÍƒtƒBƒ‹ƒ^•ƒ¢H
             !DET(I,J,K)=1.0/ABS(GX(I)*EY(J)*DZ(K)*(1.0-CK(I,J,K)))**(1.0/3.0)
             DET(I,J,K)=ABS((1.0/GX(I))*(1.0/EY(J))*(1.0/DZ(K))*(1.0-CK(I,J,K)))**(1.0/3.0)
             !DET(I,J,K)=1.0/ABS(GX(I)*EY(J))**(1.0/2.0)*(1.0-CK(I,J,K))
@@ -3244,6 +3245,7 @@
 !***************    STARTING OF ITERATION   **************
 !***************                            **************
 
+ !20‰ñƒ‹[ƒv‚ð‰ñ‚µ‚ÄCGOSAE‚ð•]‰¿
         DO 1000 LOOP=1,20
             GOSAE=0.0
 
@@ -3337,7 +3339,7 @@
             DO 589 I=3,IMAX+2
             DO 589 K=3,KMAX+2
             DO 589 J=IETA(I,K),JMAX+3
-
+                !…–Ê‚É‚¨‚¯‚é——¬ƒGƒlƒ‹ƒM[‚ÌŒvŽZ
                 IF(DEPMODE.EQ.1.0) THEN
                     HK(I,J,K)=HK(I,IETA(I,K)-1,K)
                 END IF
@@ -3423,7 +3425,7 @@
 
         !END IF
 
-!******************** ï¿½ÇŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½fï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ********************
+!******************** ?¿½ÇŒï¿½?¿½?¿½?¿½?¿½?¿½f?¿½?¿½?¿½?¿½?¿½?¿½ ********************
 !!$OMP PARALLEL
 !!$OMP DO
 !        DO 6751 I=3,IMAX+2
@@ -3466,7 +3468,7 @@
 !!$OMP END DO
 !!$OMP END PARALLEL
 
-!ï¿½ÇŒï¿½ï¿½ï¿½ï¿½ï¿½ï¿½lï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ sumo260223
+!?¿½ÇŒï¿½?¿½?¿½?¿½?¿½?¿½l?¿½?¿½?¿½?¿½?¿½?¿½ sumo260223
         CKC=0.08
 !$OMP PARALLEL
 !$OMP DO
@@ -3530,7 +3532,7 @@
             !DO 700 I=1,IMAX+4
 
             !    !NO-SLIP
-            !    !WALL ï¿½ÌˆÊ’uï¿½É‹ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½0ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
+            !    !WALL ?¿½ÌˆÊ’u?¿½É‹ï¿½?¿½?¿½?¿½I?¿½?¿½0?¿½?¿½^?¿½?¿½?¿½?¿½
             !    HKDENE(I,J,3)=(HK(I,J,4)-0.0)*DZ(K)/1.500
             !    HKDD(I,J,3)=(HK(I,J,4)+0.0)*DZ(K)**2
             !    MYTDENE(I,J,3)=(MYT(I,J,4)-0.0)*DZ(K)/1.500
@@ -3560,7 +3562,7 @@
                 !HKGG(I,J,K)=(HK(I+1,J,K)+HK(I-1,J,K))*GX(I)**2
                 !MYTGENE(I,J,K)=(MYT(I+1,J,K)-MYT(I-1,J,K))*0.50*GX(I)
                 
-                !WALL ï¿½ÌˆÊ’uï¿½É‹ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½0ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
+                !WALL ?¿½ÌˆÊ’u?¿½É‹ï¿½?¿½?¿½?¿½I?¿½?¿½0?¿½?¿½^?¿½?¿½?¿½?¿½
                 HKGENE(I,J,K)=(0.0-HK(I-1,J,K))*GX(I)/1.500
                 HKGG(I,J,K)=(0.0+HK(I-1,J,K))*GX(I)**2
                 MYTGENE(I,J,K)=(0.0-MYT(I-1,J,K))*GX(I)/1.500
@@ -3577,7 +3579,7 @@
                 !HKGG(I,J,K)=(HK(I+1,J,K)+HK(I-1,J,K))*GX(I)**2
                 !MYTGENE(I,J,K)=(MYT(I+1,J,K)-MYT(I-1,J,K))*0.50*GX(I)
 
-                !WALL ï¿½ÌˆÊ’uï¿½É‹ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½0ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
+                !WALL ?¿½ÌˆÊ’u?¿½É‹ï¿½?¿½?¿½?¿½I?¿½?¿½0?¿½?¿½^?¿½?¿½?¿½?¿½
                 HKGENE(I,J,K)=(HK(I+1,J,K)-0.0)*GX(I)/1.500
                 HKGG(I,J,K)=(HK(I+1,J,K)+0.0)*GX(I)**2
                 MYTGENE(I,J,K)=(MYT(I+1,J,K)-0.0)*GX(I)/1.500
@@ -3604,7 +3606,7 @@
                 !HKDD(I,J,K)=(HK(I,J,K+1)+HK(I,J,K-1))*DZ(K)**2
                 !MYTDENE(I,J,K)=(MYT(I,J,K+1)-MYT(I,J,K-1))*0.50*DZ(K)
                 
-                !WALL ï¿½ÌˆÊ’uï¿½É‹ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½0ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
+                !WALL ?¿½ÌˆÊ’u?¿½É‹ï¿½?¿½?¿½?¿½I?¿½?¿½0?¿½?¿½^?¿½?¿½?¿½?¿½
                 HKDENE(I,J,K)=(0.0-HK(I,J,K-1))*DZ(K)/1.500
                 HKDD(I,J,K)=(0.0+HK(I,J,K-1))*DZ(K)**2
                 MYTDENE(I,J,K)=(0.0-MYT(I,J,K-1))*DZ(K)/1.500
@@ -3621,7 +3623,7 @@
                 !HKDD(I,J,K)=(HK(I,J,K+1)+HK(I,J,K-1))*DZ(K)**2
                 !MYTDENE(I,J,K)=(MYT(I,J,K+1)-MYT(I,J,K-1))*0.50*DZ(K)
 
-                !WALL ï¿½ÌˆÊ’uï¿½É‹ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½0ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
+                !WALL ?¿½ÌˆÊ’u?¿½É‹ï¿½?¿½?¿½?¿½I?¿½?¿½0?¿½?¿½^?¿½?¿½?¿½?¿½
                 HKDENE(I,J,K)=(HK(I,J,K+1)-0.0)*DZ(K)/1.500
                 HKDD(I,J,K)=(HK(I,J,K+1)+0.0)*DZ(K)**2
                 MYTDENE(I,J,K)=(MYT(I,J,K+1)-0.0)*DZ(K)/1.500
@@ -3771,13 +3773,13 @@ IF(pier.EQ.1.0) THEN
         DO 1781 K=Kpier_R,Kpier_L
 
             IF(I.EQ.Ipier_U-1) THEN               
-                !WALL ï¿½ÌˆÊ’uï¿½É‹ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½0ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
+                !WALL ?¿½ÌˆÊ’u?¿½É‹ï¿½?¿½?¿½?¿½I?¿½?¿½0?¿½?¿½^?¿½?¿½?¿½?¿½
                 DK(I,J,K)=DT*(1.500*MYT(I,J,K)*GX(I)**2+ &
                               2.000*MYT(I,J,K)*(EY(J)**2+DZ(K)**2) &
                               +AK0(I,J,K)+2.0*TEI1(I,J,K))
             END IF
             IF(I.EQ.Ipier_D+1) THEN
-                !WALL ï¿½ÌˆÊ’uï¿½É‹ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½0ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
+                !WALL ?¿½ÌˆÊ’u?¿½É‹ï¿½?¿½?¿½?¿½I?¿½?¿½0?¿½?¿½^?¿½?¿½?¿½?¿½
                 DK(I,J,K)=DT*(1.500*MYT(I,J,K)*GX(I)**2+ &
                               2.000*MYT(I,J,K)*(EY(J)**2+DZ(K)**2) &
                               +AK0(I,J,K)+2.0*TEI1(I,J,K))
@@ -3793,13 +3795,13 @@ IF(pier.EQ.1.0) THEN
         DO 1791 I=Ipier_U,Ipier_D
 
             IF(K.EQ.Kpier_R-1) THEN
-                !WALL ï¿½ÌˆÊ’uï¿½É‹ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½0ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
+                !WALL ?¿½ÌˆÊ’u?¿½É‹ï¿½?¿½?¿½?¿½I?¿½?¿½0?¿½?¿½^?¿½?¿½?¿½?¿½
                 DK(I,J,K)=DT*(1.500*MYT(I,J,K)*DZ(K)**2+ &
                               2.000*MYT(I,J,K)*(EY(J)**2+GX(I)**2) &
                               +AK0(I,J,K)+2.0*TEI1(I,J,K))
             END IF
             IF(K.EQ.Kpier_L+1) THEN
-                !WALL ï¿½ÌˆÊ’uï¿½É‹ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½0ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
+                !WALL ?¿½ÌˆÊ’u?¿½É‹ï¿½?¿½?¿½?¿½I?¿½?¿½0?¿½?¿½^?¿½?¿½?¿½?¿½
                 DK(I,J,K)=DT*(1.500*MYT(I,J,K)*DZ(K)**2+ &
                               2.000*MYT(I,J,K)*(EY(J)**2+GX(I)**2) &
                               +AK0(I,J,K)+2.0*TEI1(I,J,K))
@@ -5727,15 +5729,15 @@ IF(pier.EQ.1.0) THEN
 !
 !C*********** Fluctuating inflow velocity  ********C !add by Chico_231020
 
-        !!ï¿½ï¿½ï¿½Ï’lï¿½Æ•Wï¿½ï¿½ï¿½Îï¿½
+        !!?¿½?¿½?¿½Ï’l?¿½Æ•W?¿½?¿½?¿½Îï¿½
         !MEAN=0.0d0
         !STD_DEV=0.20d0
 
-        !!ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½
+        !!?¿½?¿½?¿½?¿½?¿½Ìï¿½?¿½?¿½?¿½?¿½
         !CALL random_seed()
         !I=1
         !DO 3114 K=1,KMAX+4
-        !    !ï¿½ï¿½ï¿½Kï¿½ï¿½ï¿½zï¿½É]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ð¶ï¿½
+        !    !?¿½?¿½?¿½K?¿½?¿½?¿½z?¿½É]?¿½?¿½?¿½?¿½?¿½?¿½?¿½?¶ï¿½
         !    DO 3116 J=IGL(I,K)+1,IETA(I,K)
         !        CALL random_number(r1)
         !        CALL random_number(r2)
@@ -5744,10 +5746,10 @@ IF(pier.EQ.1.0) THEN
 
                 !PDF(I,J,K)=1.0d0/(STD_DEV*SQRT(2.0d0*PHI))* &
                 !           EXP(-((FLUC_RATE(I,J,K)-MEAN)**2.00)/(2.0d0*STD_DEV**2.00))
-! ï¿½Ä“xï¿½ï¿½ï¿½vï¿½ï¿½ï¿½vï¿½Z
+! ?¿½Ä“x?¿½?¿½?¿½v?¿½?¿½?¿½v?¿½Z
 !c      r_sum2(I,K) = r_sum2(I,K)+Fluc_rate(I,J,K)
 
-! ï¿½ï¿½ï¿½ï¿½ï¿½Ìï¿½ï¿½vï¿½ï¿½ï¿½vï¿½Z
+! ?¿½?¿½?¿½?¿½?¿½Ìï¿½?¿½v?¿½?¿½?¿½v?¿½Z
 !C      r_sum1(I,K) = r_sum1(I,K)+FLuc_rate(I,J,K)
 
  3116  CONTINUE
@@ -5759,7 +5761,7 @@ IF(pier.EQ.1.0) THEN
 !c       r_sum2(I,K)=0.0d0
 !c       DO 3118 J= IETA(I,K), IGL(I,K)+1, -1
 
-!c       ! ï¿½ï¿½ï¿½vï¿½ï¿½0ï¿½É‹ß‚ï¿½ï¿½È‚ï¿½æ‚¤ï¿½É’ï¿½ï¿½ï¿½
+!c       ! ?¿½?¿½?¿½v?¿½?¿½0?¿½É‹ß‚ï¿½?¿½È‚ï¿½æ‚¤?¿½É’ï¿½?¿½?¿½
 !c       FLuc_rate(I,J,K) = FLuc_rate(I,J,K)
 !c      &            -r_sum1(I,K) / (IETA(I,K)-(IGL(I,K)+1)+1)
 
@@ -5767,7 +5769,7 @@ IF(pier.EQ.1.0) THEN
 !c      &            3.14159265358979323846d0)) *
 !c      &            exp(-((FLuc_rate(I,J,K) - mean)**2) /
 !c      &             (2.0d0 * std_dev**2))
-!c       ! ï¿½Ä“xï¿½ï¿½ï¿½vï¿½ï¿½ï¿½vï¿½Z
+!c       ! ?¿½Ä“x?¿½?¿½?¿½v?¿½?¿½?¿½v?¿½Z
 !c       r_sum2(I,K) = r_sum2(I,K)+Fluc_rate(I,J,K)
 
 !c       write(*, *) FLuc_rate(I,J,K), pdf(I,J,K)
@@ -5780,7 +5782,7 @@ IF(pier.EQ.1.0) THEN
 
         !I=1
         !DO 3224 K=1,KMAX+4
-        !DO 3224 J=IGL(I,K)+1,IETA(I,K) !ï¿½Ï“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îï¿½ï¿½ï¿½ï¿½zï¿½É•tï¿½ï¿½
+        !DO 3224 J=IGL(I,K)+1,IETA(I,K) !?¿½Ï“ï¿½?¿½?¿½?¿½?¿½?¿½?¿½Îï¿½?¿½?¿½?¿½z?¿½É•t?¿½?¿½
 
             !UF(I,J,K)=U(I,IETA(I,K),K)*FLUC_RATE(I,J,K)
             !VF(I,J,K)=U(I,IETA(I,K),K)*FLUC_RATE(I,J,K)
@@ -8592,7 +8594,7 @@ IF(pier.EQ.1.0) THEN
 !
 !
             OPEN(10,FILE= 'INPUT/10_HS.txt')
-                READ(10,*) HSTIME   !HS?ï¿½ï¿½J?ï¿½ï¿½n?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½Ô‚ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½(s)
+                READ(10,*) HSTIME   !HS??¿½?¿½J??¿½?¿½n??¿½?¿½??¿½?¿½??¿½?¿½Ô‚ï¿½??¿½?¿½??¿½?¿½??¿½?¿½(s)
             CLOSE(10)
 !            NMIN=NINT(HSTIME)
 !            NMIN=INT(HSTIME*1000)
