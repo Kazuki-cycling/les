@@ -83,4 +83,6 @@ SSD(I,K)=ELES1(I,K)-DT*(DUDX(I,K)+DWDZ(I,K))-ELES(I,K)
 
 
 
+‚â‚â‚â
+
 
