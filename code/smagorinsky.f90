@@ -1,8 +1,8 @@
       module MF_SF
 
-      INTEGER(4), parameter :: NX=50    !ITO CHANGE !x-direction
+      INTEGER(4), parameter :: NX=100    !ITO CHANGE !x-direction
       INTEGER(4), parameter :: NY=44    !ITO CHANGE  !y-direction
-      INTEGER(4), parameter :: NZ=30    !ITO CHANGE !z-direction
+      INTEGER(4), parameter :: NZ=70    !ITO CHANGE !z-direction
 
       INTEGER ALLOC_ERR
 
@@ -108,6 +108,8 @@
       REAL(8) :: UB(NX+4,NY+4,NZ+4),VB(NX+4,NY+4,NZ+4)
       REAL(8) :: WB(NX+4,NY+4,NZ+4)
       REAL(8) :: DETA(NX+4,NZ+4)
+      REAL(8) :: VANFUNC(NX+4,NY+4,NZ+4) !van driest damping function !ito 260318
+
 !C
 !CCCCCCC////// INIT ////////CCCCCC
 !C
@@ -3156,839 +3158,848 @@
 
 !C******************************************************************
 
-!$OMP PARALLEL
-!$OMP DO
-        DO 100 K=2,KMAX+3
-        DO 100 I=2,IMAX+3
-        DO 100 J=2,JMAX+2
-
-            UK(I,J,K)=U(I,J,K)
-            VK(I,J,K)=V(I,J,K)
-            WK(I,J,K)=W(I,J,K)
-            CK(I,J,K)=C(I,J,K)
-            USK(I,J,K)=US(I,J,K)
-            VSK(I,J,K)=VS(I,J,K)
-            WSK(I,J,K)=WS(I,J,K)
-            UUSRK(I,J,K)=UUSR(I,J,K)
-            VVSRK(I,J,K)=VVSR(I,J,K)
-            WWSRK(I,J,K)=WWSR(I,J,K)
-            UUSRK1(I,J,K)=UUSR1(I,J,K)
-            VVSRK1(I,J,K)=VVSR1(I,J,K)
-            WWSRK1(I,J,K)=WWSR1(I,J,K)
-
- 100    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 80 K=2,KMAX+3 !K=3,KMAX+2
-        DO 80 I=2,IMAX+3
-        DO 80 J=2,JMAX+2
-
-            RE1ENE(I,J,K)=SQRT((ABS(USK(I,J,K)-UK(I,J,K)))**2 &
-                              +(ABS(VSK(I,J,K)-VK(I,J,K)))**2 &
-                              +(ABS(WSK(I,J,K)-WK(I,J,K)))**2)*DR/RED
-
- 80     CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 85 K=2,KMAX+3    !K=3,KMAX+2
-        DO 85 I=2,IMAX+3
-        DO 85 J=2,JMAX+2
-            !速度・濃度の空間勾配を中心差分で算出
-            UKG(I,J,K)=(UK(I+1,J,K)-UK(I-1,J,K))*0.50*GX(I)
-            UKE(I,J,K)=(UK(I,J+1,K)-UK(I,J-1,K))*0.50*EY(J)
-            UKD(I,J,K)=(UK(I,J,K+1)-UK(I,J,K-1))*0.50*DZ(K)
-
-            VKG(I,J,K)=(VK(I+1,J,K)-VK(I-1,J,K))*0.50*GX(I)
-            VKE(I,J,K)=(VK(I,J+1,K)-VK(I,J-1,K))*0.50*EY(J)
-            VKD(I,J,K)=(VK(I,J,K+1)-VK(I,J,K-1))*0.50*DZ(K)
-
-            WKG(I,J,K)=(WK(I+1,J,K)-WK(I-1,J,K))*0.50*GX(I)
-            WKE(I,J,K)=(WK(I,J+1,K)-WK(I,J-1,K))*0.50*EY(J)
-            WKD(I,J,K)=(WK(I,J,K+1)-WK(I,J,K-1))*0.50*DZ(K)
-
-            CKG(I,J,K)=(CK(I+1,J,K)-CK(I-1,J,K))*0.50*GX(I)
-            CKE(I,J,K)=(CK(I,J+1,K)-CK(I,J-1,K))*0.50*EY(J)
-            CKD(I,J,K)=(CK(I,J,K+1)-CK(I,J,K-1))*0.50*DZ(K)
-
-            !GAL関係？
-            TEI1(I,J,K)=18.0*RED/DR**2 &
-                        *ABS(CK(I,J,K)/(1.0-CK(I,J,K)) ) &
-                       !*(1.0+0.150*RE1ENE(I,J,K)**0.6870)
-                        *(1.0+0.4320*RE1ENE(I,J,K)**0.6870)  !SUMO23/10/23
-!CCCCCCCCcc     &             *ABS(1.0-CK(I,J,K))**(-2.70)
- 85     CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 1600 K=1,KMAX+4
-        DO 1600 I=1,IMAX+4
-        DO 1600 J=1,JMAX+3
-            !DETはフィルタ幅Δ？
-            !DET(I,J,K)=1.0/ABS(GX(I)*EY(J)*DZ(K)*(1.0-CK(I,J,K)))**(1.0/3.0)
-            DET(I,J,K)=ABS((1.0/GX(I))*(1.0/EY(J))*(1.0/DZ(K))*(1.0-CK(I,J,K)))**(1.0/3.0)
-            !DET(I,J,K)=1.0/ABS(GX(I)*EY(J))**(1.0/2.0)*(1.0-CK(I,J,K))
-            !DET(I,J,K)=1.0/ABS(GX(I)*EY(J))**(1.0/2.0)
-
- 1600   CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!***************                            **************
-!***************    STARTING OF ITERATION   **************
-!***************                            **************
-
- !20回ループを回して，GOSAEを評価
-        DO 1000 LOOP=1,20
-            GOSAE=0.0
-
-!********** BOUNDARY CONDITION **********!
-
-!********** CEILING & GROUND CONDITION **********!
-
-            DO 900 K=3,KMAX+2
-            DO 900 I=3,IMAX+2
-            DO 900 J=1,IGL(I,K)
-
-!********** CEILING NO-SLIP **********!
-
-!CC                  USTA1=ABS(U(I,JMAX,K)*CAR/LOG(1.50/EY(3)/Z0))
-!CC                  HK(I,JMAX+1,K)=ABS(USTAu1(I))**2/0.30
-!                  HK(I,JMAX+1,K)=(ABS(USTAu1(I))**2+ABS(VSTAu1(I))**2)/0.30
-!                  HK(I,JMAX+2,K)=HK(I,JMAX+1,K)
-!                  HK(I,JMAX+3,K)=HK(I,JMAX+2,K)
-
-!********** CEILING SLIP **********!
-
-                !HK(I,JMAX+2,K)=HK(I,JMAX+1,K)
-                !HK(I,JMAX+3,K)=HK(I,JMAX+1,K)
-
-!CCCCCC////// ZERO Gradient Boundary Condition ////////
-
-                !HK(I,3,K)=HK(I,4,K)
-                !HK(I,2,K)=HK(I,3,K)
-                !HK(I,1,K)=HK(I,3,K)
-
-                HK(I,J,K)=HK(I,IGL(I,K)+1,K)
-
- 900    CONTINUE
-
-!********** KARYUUGAWA & JYOURYUUGAWA NO JYOUKEN **********!
-
-            DO 800 K=1,KMAX+4
-            DO 800 J=1,JMAX+3
-
-!CCCCCC////// Periodic Boundary Condition ////////
-
-                HK(IMAX+3,J,K)=HK(3,J,K)    !ITO CHANGE
-                HK(IMAX+4,J,K)=HK(4,J,K)    !ITO CHANGE
-                HK(1,J,K)=HK(IMAX+1,J,K)    !ITO CHANGE
-                HK(2,J,K)=HK(IMAX+2,J,K)    !ITO CHANGE
-
-!CCCCCC////// ZERO Gradient Boundary Condition ////////
-
-                !HK(IMAX+3,J,K)=HK(IMAX+2,J,K)
-                !HK(IMAX+4,J,K)=HK(IMAX+2,J,K)
-                !HK(1,J,K)=HK(3,J,K)
-                !HK(2,J,K)=HK(3,J,K)
-
- 800  CONTINUE
-
-!********** OKUYUKI & TEMAE NO JYOUKEN **********!
-
-            DO 700 J=1,JMAX+3
-            DO 700 I=1,IMAX+4
-
-!CCCCCC////// Periodic Boundary Condition ////////
-
-                HK(I,J,KMAX+3)=HK(I,J,3)    !ITO CHANGE
-                HK(I,J,KMAX+4)=HK(I,J,4)    !ITO CHANGE
-                HK(I,J,1)=HK(I,J,KMAX+1)    !ITO CHANGE
-                HK(I,J,2)=HK(I,J,KMAX+2)    !ITO CHANGE
-
-!CCCCCC////// ZERO Gradient Boundary Condition ////////
-
-                !SLIP
-                !HK(I,J,KMAX+3)=HK(I,J,KMAX+2)    !ITO CHANGE
-                !HK(I,J,KMAX+4)=HK(I,J,KMAX+2)    !ITO CHANGE
-                !HK(I,J,1)=HK(I,J,3)    !ITO CHANGE
-                !HK(I,J,2)=HK(I,J,3)    !ITO CHANGE
-
-                !NO-SLIP
-                !HK(I,J,KMAX+3)=-HK(I,J,KMAX+2)  !sumo260220
-                !HK(I,J,KMAX+4)=-HK(I,J,KMAX+1)  !sumo260220
-                !HK(I,J,1)=-HK(I,J,4)  !sumo260220
-                !HK(I,J,2)=-HK(I,J,3)  !sumo260220
-
-                !MYT(I,J,KMAX+3)=-MYT(I,J,KMAX+2)  !sumo260220
-                !MYT(I,J,KMAX+4)=-MYT(I,J,KMAX+1)  !sumo260220
-                !MYT(I,J,1)=-MYT(I,J,4)  !sumo260220
-                !MYT(I,J,2)=-MYT(I,J,3)  !sumo260220
-
- 700  CONTINUE
-
-!CCCCCC////// Surface Boundary Condition ////////CCCCCC
-
-            DO 589 I=3,IMAX+2
-            DO 589 K=3,KMAX+2
-            DO 589 J=IETA(I,K),JMAX+3
-                !水面における乱流エネルギーの計算
-                IF(DEPMODE.EQ.1.0) THEN
-                    HK(I,J,K)=HK(I,IETA(I,K)-1,K)
-                END IF
-
- 589    CONTINUE
-
-!CCCCCC////// Pier Boundary Condition ////////CCCCCC
-
-        !IF(pier.EQ.1.0) THEN
-
-            !DO 701 J=1,JMAX+3
-            !DO 701 K=Kpier_R,Kpier_L
-            !DO 701 I=Ipier_U,Ipier_D
-
-                !HK(I,J,K)=HK(I,J,Kpier_L+1)
-                !HK(Ipier_D,J,K)=HK(Ipier_D+1,J,K)
-                !!HK(I,J,Kpier_R)=HK(I,J,Kpier_R-1)
-                !!HK(I,J,Kpier_L)=HK(I,J,Kpier_L+1)
-                !HK(Ipier_U,J,K)=HK(Ipier_U-1,J,K)
-                !!HK(I,J,K)=HK(Ipier_U-1,J,K)
-
- 701    CONTINUE
-
-        !END IF
-        !IF(pier.EQ.1.0) THEN
-
-            !DO 7011 J=1,JMAX+3
-            !DO 7011 K=Kpier_R1,Kpier_L1
-            !DO 7011 I=Ipier_U1,Ipier_D1
-
-                !HK(Ipier_D1,J,K)=HK(Ipier_D1+1,J,K)
-                !!HK(I,J,Kpier_R1)=HK(I,J,Kpier_R1-1)
-                !!HK(I,J,Kpier_L1)=HK(I,J,Kpier_L1+1)
-                !HK(I,J,K)=HK(I,J,Kpier_L1+1)
-                !HK(Ipier_U1,J,K)=HK(Ipier_U1-1,J,K)
-
- 7011  CONTINUE
-
-        !END IF
-        !IF(pier.EQ.1.0) THEN
-
-            !DO 7012 J=1,JMAX+3
-            !DO 7012 K=Kpier_R2,Kpier_L2
-            !DO 7012 I=Ipier_U2,Ipier_D2
-
-                !HK(Ipier_D2,J,K)=HK(Ipier_D2+1,J,K)
-                !!HK(I,J,Kpier_R2)=HK(I,J,Kpier_R2-1)
-                !!HK(I,J,Kpier_L2)=HK(I,J,Kpier_L2+1)
-                !HK(I,J,K)=HK(I,J,Kpier_R2-1)
-                !HK(Ipier_U2,J,K)=HK(Ipier_U2-1,J,K)
-
- 7012   CONTINUE
-
-        !END IF
-        !IF(pier.EQ.1.0) THEN
-
-            !DO 7013 J=1,JMAX+3
-            !DO 7013 K=Kpier_R3,Kpier_L3
-            !DO 7013 I=Ipier_U3,Ipier_D3
-
-                !HK(Ipier_D3,J,K)=HK(Ipier_D3+1,J,K)
-                !!HK(I,J,Kpier_R1)=HK(I,J,Kpier_R1-1)
-                !!HK(I,J,Kpier_L1)=HK(I,J,Kpier_L1+1)
-                !HK(I,J,K)=HK(I,J,Kpier_L3+1)
-                !HK(Ipier_U3,J,K)=HK(Ipier_U3-1,J,K)
-
- 7013   CONTINUE
-
-        !END IF
-        !IF(pier.EQ.1.0) THEN
-
-            !DO 7014 J=1,JMAX+3
-            !DO 7014 K=Kpier_R4,Kpier_L4
-            !DO 7014 I=Ipier_U4,Ipier_D4
-
-                !HK(Ipier_D4,J,K)=HK(Ipier_D4+1,J,K)
-                !!HK(I,J,Kpier_R2)=HK(I,J,Kpier_R2-1)
-                !!HK(I,J,Kpier_L2)=HK(I,J,Kpier_L2+1)
-                !HK(I,J,K)=HK(I,J,Kpier_R4-1)
-                !HK(Ipier_U4,J,K)=HK(Ipier_U4-1,J,K)
-
- 7014   CONTINUE
-
-        !END IF
-
-!******************** ?ｿｽﾇ鯉ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽf?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ ********************
 !!$OMP PARALLEL
 !!$OMP DO
-!        DO 6751 I=3,IMAX+2
-!        DO 6751 J=3,JMAX+1
-!        DO 6751 K=3,KMAX+2
+!        DO 100 K=2,KMAX+3
+!        DO 100 I=2,IMAX+3
+!        DO 100 J=2,JMAX+2
 !
-!            USTABRW(I,J)=ABS(U(I,J,3)/(1.0/0.40*LOG(USTABRW1(I,J)*0.50/EY(3)/RED)+5.50))+0.01
-!            USTABLW(I,J)=ABS(U(I,J,KMAX+2)/(1.0/0.40*LOG(USTABLW1(I,J)*0.50/EY(3)/RED)+5.50))+0.01
-!            USTABRW_P(I,J)=ABS(U(I,J,Kpier_R-1)/(1.0/0.40*LOG(USTABRW_P1(I,J)*0.50/EY(3)/RED)+5.50))+0.01
-!            USTABLW_P(I,J)=ABS(U(I,J,Kpier_L+1)/(1.0/0.40*LOG(USTABLW_P1(I,J)*0.50/EY(3)/RED)+5.50))+0.01
-!            WSTABFW_P(J,K)=ABS(W(Ipier_U-1,J,K)/(1.0/0.40*LOG(WSTABFW_P1(J,K)*0.50/EY(3)/RED)+5.50))+0.01
-!            WSTABBW_P(J,K)=ABS(W(Ipier_D+1,J,K)/(1.0/0.40*LOG(WSTABBW_P1(J,K)*0.50/EY(3)/RED)+5.50))+0.01
-!            
-! 6751     CONTINUE
+!            UK(I,J,K)=U(I,J,K)
+!            VK(I,J,K)=V(I,J,K)
+!            WK(I,J,K)=W(I,J,K)
+!            CK(I,J,K)=C(I,J,K)
+!            USK(I,J,K)=US(I,J,K)
+!            VSK(I,J,K)=VS(I,J,K)
+!            WSK(I,J,K)=WS(I,J,K)
+!            UUSRK(I,J,K)=UUSR(I,J,K)
+!            VVSRK(I,J,K)=VVSR(I,J,K)
+!            WWSRK(I,J,K)=WWSR(I,J,K)
+!            UUSRK1(I,J,K)=UUSR1(I,J,K)
+!            VVSRK1(I,J,K)=VVSR1(I,J,K)
+!            WWSRK1(I,J,K)=WWSR1(I,J,K)
+!
+! 100    CONTINUE
 !!$OMP END DO
 !!$OMP END PARALLEL
 !
 !!$OMP PARALLEL
 !!$OMP DO
-!        DO 6750 K=3,KMAX+2
-!        DO 6750 I=3,IMAX+2
-!        DO 6750 J=3,JMAX+1
+!        DO 80 K=2,KMAX+3 !K=3,KMAX+2
+!        DO 80 I=2,IMAX+3
+!        DO 80 J=2,JMAX+2
 !
-!            WDF1(I,J,K)=(ABS(Z(I,3,K)-(Z(I,3,3)-0.50/DZ(3))))*USTABRW(I,J)/RED
-!            WDF2(I,J,K)=(ABS(Z(I,3,K)-(Z(I,3,KMAX+2)+0.50/DZ(3))))*USTABLW(I,J)/RED
-!            FW1(I,J,K)=1.0-(EXP(-WDF1(I,J,K)/25.0))
-!            FW2(I,J,K)=1.0-(EXP(-WDF2(I,J,K)/25.0))
-!            IF(pier.EQ.1.0) THEN
-!                WDF3(I,J,K)=(ABS(X(I,3,K)-(X(Ipier_U,3,K)-0.50/GX(3))))*WSTABFW_P(J,K)/RED
-!                WDF4(I,J,K)=(ABS(X(I,3,K)-(X(Ipier_D,3,K)+0.50/GX(3))))*WSTABBW_P(J,K)/RED
-!                WDF5(I,J,K)=(ABS(Z(I,3,K)-(Z(I,3,Kpier_R)-0.50/DZ(3))))*USTABRW_P(I,J)/RED
-!                WDF6(I,J,K)=(ABS(Z(I,3,K)-(Z(I,3,Kpier_L)+0.50/DZ(3))))*USTABLW_P(I,J)/RED
-!                FW3(I,J,K)=1.0-(EXP(-WDF3(I,J,K)/25.0))
-!                FW4(I,J,K)=1.0-(EXP(-WDF4(I,J,K)/25.0))
-!                FW5(I,J,K)=1.0-(EXP(-WDF5(I,J,K)/25.0))
-!                FW6(I,J,K)=1.0-(EXP(-WDF6(I,J,K)/25.0))
-!            END IF
-!            
-! 6750     CONTINUE
+!            RE1ENE(I,J,K)=SQRT((ABS(USK(I,J,K)-UK(I,J,K)))**2 &
+!                              +(ABS(VSK(I,J,K)-VK(I,J,K)))**2 &
+!                              +(ABS(WSK(I,J,K)-WK(I,J,K)))**2)*DR/RED
+!
+! 80     CONTINUE
 !!$OMP END DO
 !!$OMP END PARALLEL
-
-!?ｿｽﾇ鯉ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽl?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ sumo260223
-        CKC=0.08
-!$OMP PARALLEL
-!$OMP DO
-        DO 1660 K=2,KMAX+3
-        DO 1660 I=2,IMAX+3
-        DO 1660 J=2,JMAX+2
-
-            DETN(I,J,K)=DET(I,J,K)/(1.0+CKC*(DET(I,J,K)**2) &
-                       *(0.500*((2.0*UKG(I,J,K))**2+(2.0*VKE(I,J,K))**2+(2.0*WKD(I,J,K))**2 &
-                       +(UKE(I,J,K)+VKG(I,J,K))**2+(UKD(I,J,K)+WKG(I,J,K))**2+(VKD(I,J,K)+WKE(I,J,K))**2)) &
-                       /HK(I,J,K))
-
- 1660   CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!C**********  VORTEX DIFUSION COEF  **************
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 50 K=1,KMAX+4
-        DO 50 I=1,IMAX+4
-        DO 50 J=1,JMAX+3
-
-            EK(I,J,K)=CE*ABS(HK(I,J,K))**1.50/DET(I,J,K)
-            MYT(I,J,K)=CS*ABS(HK(I,J,K))**0.50*DETN(I,J,K)
-            !MYT(I,J,K)=CS*ABS(HK(I,J,K)*FW1(I,J,K)*FW2(I,J,K))**0.50*DET(I,J,K)
-            !IF(pier.EQ.1.0) THEN
-            !    MYT(I,J,K)=CS*ABS(HK(I,J,K))**0.50*DET(I,J,K)*FW1(I,J,K)*FW2(I,J,K)*FW6(I,J,K)
-            !END IF
-
- 50     CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 150 K=3,KMAX+2
-        DO 150 I=3,IMAX+2
-        DO 150 J=3,JMAX+1
-
-            HKGENE(I,J,K)=(HK(I+1,J,K)-HK(I-1,J,K))*0.50*GX(I)
-            HKEENE(I,J,K)=(HK(I,J+1,K)-HK(I,J-1,K))*0.50*EY(J)
-            HKDENE(I,J,K)=(HK(I,J,K+1)-HK(I,J,K-1))*0.50*DZ(K)
-
-            HKGG(I,J,K)=(HK(I+1,J,K)+HK(I-1,J,K))*GX(I)**2
-            HKEE(I,J,K)=(HK(I,J+1,K)+HK(I,J-1,K))*EY(J)**2
-            HKDD(I,J,K)=(HK(I,J,K+1)+HK(I,J,K-1))*DZ(K)**2
-
-            MYTGENE(I,J,K)=(MYT(I+1,J,K)-MYT(I-1,J,K))*0.50*GX(I)
-            MYTEENE(I,J,K)=(MYT(I,J+1,K)-MYT(I,J-1,K))*0.50*EY(J)
-            MYTDENE(I,J,K)=(MYT(I,J,K+1)-MYT(I,J,K-1))*0.50*DZ(K)
-
- 150    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!********** OKUYUKI & TEMAE NO JYOUKEN **********!
-
-            !DO 700 J=1,JMAX+3
-            !DO 700 I=1,IMAX+4
-
-            !    !NO-SLIP
-            !    !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
-            !    HKDENE(I,J,3)=(HK(I,J,4)-0.0)*DZ(K)/1.500
-            !    HKDD(I,J,3)=(HK(I,J,4)+0.0)*DZ(K)**2
-            !    MYTDENE(I,J,3)=(MYT(I,J,4)-0.0)*DZ(K)/1.500
-            !
-            !    HKDENE(I,J,KMAX+2)=(0.0-HK(I,J,KMAX+1))*DZ(K)/1.500
-            !    HKDD(I,J,KMAX+2)=(0.0+HK(I,J,KMAX+1))*DZ(K)**2
-            !    MYTDENE(I,J,KMAX+2)=(0.0-MYT(I,J,KMAX+1))*DZ(K)/1.500
-
+!
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 85 K=2,KMAX+3    !K=3,KMAX+2
+!        DO 85 I=2,IMAX+3
+!        DO 85 J=2,JMAX+2
+!            !速度・濃度の空間勾配を中心差分で算出
+!            UKG(I,J,K)=(UK(I+1,J,K)-UK(I-1,J,K))*0.50*GX(I)
+!            UKE(I,J,K)=(UK(I,J+1,K)-UK(I,J-1,K))*0.50*EY(J)
+!            UKD(I,J,K)=(UK(I,J,K+1)-UK(I,J,K-1))*0.50*DZ(K)
+!
+!            VKG(I,J,K)=(VK(I+1,J,K)-VK(I-1,J,K))*0.50*GX(I)
+!            VKE(I,J,K)=(VK(I,J+1,K)-VK(I,J-1,K))*0.50*EY(J)
+!            VKD(I,J,K)=(VK(I,J,K+1)-VK(I,J,K-1))*0.50*DZ(K)
+!
+!            WKG(I,J,K)=(WK(I+1,J,K)-WK(I-1,J,K))*0.50*GX(I)
+!            WKE(I,J,K)=(WK(I,J+1,K)-WK(I,J-1,K))*0.50*EY(J)
+!            WKD(I,J,K)=(WK(I,J,K+1)-WK(I,J,K-1))*0.50*DZ(K)
+!
+!            CKG(I,J,K)=(CK(I+1,J,K)-CK(I-1,J,K))*0.50*GX(I)
+!            CKE(I,J,K)=(CK(I,J+1,K)-CK(I,J-1,K))*0.50*EY(J)
+!            CKD(I,J,K)=(CK(I,J,K+1)-CK(I,J,K-1))*0.50*DZ(K)
+!
+!            !GAL関係？
+!            TEI1(I,J,K)=18.0*RED/DR**2 &
+!                        *ABS(CK(I,J,K)/(1.0-CK(I,J,K)) ) &
+!                       !*(1.0+0.150*RE1ENE(I,J,K)**0.6870)
+!                        *(1.0+0.4320*RE1ENE(I,J,K)**0.6870)  !SUMO23/10/23
+!!CCCCCCCCcc     &             *ABS(1.0-CK(I,J,K))**(-2.70)
+! 85     CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 1600 K=1,KMAX+4
+!        DO 1600 I=1,IMAX+4
+!        DO 1600 J=1,JMAX+3
+!            !DETはフィルタ幅Δ？
+!            !DET(I,J,K)=1.0/ABS(GX(I)*EY(J)*DZ(K)*(1.0-CK(I,J,K)))**(1.0/3.0)
+!            DET(I,J,K)=ABS((1.0/GX(I))*(1.0/EY(J))*(1.0/DZ(K))*(1.0-CK(I,J,K)))**(1.0/3.0)
+!            !DET(I,J,K)=1.0/ABS(GX(I)*EY(J))**(1.0/2.0)*(1.0-CK(I,J,K))
+!            !DET(I,J,K)=1.0/ABS(GX(I)*EY(J))**(1.0/2.0)
+!
+! 1600   CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!!***************                            **************
+!!***************    STARTING OF ITERATION   **************
+!!***************                            **************
+!
+! !20回ループを回して，GOSAEを評価
+!        DO 1000 LOOP=1,20
+!            GOSAE=0.0
+!
+!!********** BOUNDARY CONDITION **********!
+!
+!!********** CEILING & GROUND CONDITION **********!
+!
+!            DO 900 K=3,KMAX+2
+!            DO 900 I=3,IMAX+2
+!            DO 900 J=1,IGL(I,K)
+!
+!!********** CEILING NO-SLIP **********!
+!
+!!CC                  USTA1=ABS(U(I,JMAX,K)*CAR/LOG(1.50/EY(3)/Z0))
+!!CC                  HK(I,JMAX+1,K)=ABS(USTAu1(I))**2/0.30
+!!                  HK(I,JMAX+1,K)=(ABS(USTAu1(I))**2+ABS(VSTAu1(I))**2)/0.30
+!!                  HK(I,JMAX+2,K)=HK(I,JMAX+1,K)
+!!                  HK(I,JMAX+3,K)=HK(I,JMAX+2,K)
+!
+!!********** CEILING SLIP **********!
+!
+!                !HK(I,JMAX+2,K)=HK(I,JMAX+1,K)
+!                !HK(I,JMAX+3,K)=HK(I,JMAX+1,K)
+!
+!!CCCCCC////// ZERO Gradient Boundary Condition ////////
+!
+!                !HK(I,3,K)=HK(I,4,K)
+!                !HK(I,2,K)=HK(I,3,K)
+!                !HK(I,1,K)=HK(I,3,K)
+!
+!                HK(I,J,K)=HK(I,IGL(I,K)+1,K)
+!
+! 900    CONTINUE
+!
+!!********** KARYUUGAWA & JYOURYUUGAWA NO JYOUKEN **********!
+!
+!            DO 800 K=1,KMAX+4
+!            DO 800 J=1,JMAX+3
+!
+!!CCCCCC////// Periodic Boundary Condition ////////
+!
+!                HK(IMAX+3,J,K)=HK(3,J,K)    !ITO CHANGE
+!                HK(IMAX+4,J,K)=HK(4,J,K)    !ITO CHANGE
+!                HK(1,J,K)=HK(IMAX+1,J,K)    !ITO CHANGE
+!                HK(2,J,K)=HK(IMAX+2,J,K)    !ITO CHANGE
+!
+!!CCCCCC////// ZERO Gradient Boundary Condition ////////
+!
+!                !HK(IMAX+3,J,K)=HK(IMAX+2,J,K)
+!                !HK(IMAX+4,J,K)=HK(IMAX+2,J,K)
+!                !HK(1,J,K)=HK(3,J,K)
+!                !HK(2,J,K)=HK(3,J,K)
+!
+! 800  CONTINUE
+!
+!!********** OKUYUKI & TEMAE NO JYOUKEN **********!
+!
+!            DO 700 J=1,JMAX+3
+!            DO 700 I=1,IMAX+4
+!
+!!CCCCCC////// Periodic Boundary Condition ////////
+!
+!                HK(I,J,KMAX+3)=HK(I,J,3)    !ITO CHANGE
+!                HK(I,J,KMAX+4)=HK(I,J,4)    !ITO CHANGE
+!                HK(I,J,1)=HK(I,J,KMAX+1)    !ITO CHANGE
+!                HK(I,J,2)=HK(I,J,KMAX+2)    !ITO CHANGE
+!
+!!CCCCCC////// ZERO Gradient Boundary Condition ////////
+!
+!                !SLIP
+!                !HK(I,J,KMAX+3)=HK(I,J,KMAX+2)    !ITO CHANGE
+!                !HK(I,J,KMAX+4)=HK(I,J,KMAX+2)    !ITO CHANGE
+!                !HK(I,J,1)=HK(I,J,3)    !ITO CHANGE
+!                !HK(I,J,2)=HK(I,J,3)    !ITO CHANGE
+!
+!                !NO-SLIP
+!                !HK(I,J,KMAX+3)=-HK(I,J,KMAX+2)  !sumo260220
+!                !HK(I,J,KMAX+4)=-HK(I,J,KMAX+1)  !sumo260220
+!                !HK(I,J,1)=-HK(I,J,4)  !sumo260220
+!                !HK(I,J,2)=-HK(I,J,3)  !sumo260220
+!
+!                !MYT(I,J,KMAX+3)=-MYT(I,J,KMAX+2)  !sumo260220
+!                !MYT(I,J,KMAX+4)=-MYT(I,J,KMAX+1)  !sumo260220
+!                !MYT(I,J,1)=-MYT(I,J,4)  !sumo260220
+!                !MYT(I,J,2)=-MYT(I,J,3)  !sumo260220
+!
 ! 700  CONTINUE
-
-            IF(pier.EQ.1.0) THEN
-!$OMP PARALLEL
-!$OMP DO
-        DO 1780 I=3,IMAX+2
-        DO 1780 J=3,JMAX+1
-        DO 1780 K=Kpier_R,Kpier_L
-
-            IF(I.EQ.Ipier_U-1) THEN
-                !SLIP CONDITION
-                !HK(I+1,J,K)=HK(I,J,K)
-                !MYT(I+1,J,K)=CS*ABS(HK(I+1,J,K))**0.50*DET(I+1,J,K)
-
-                !NO-SLIP CONDITION
-                !HK(I+1,J,K)=-HK(I,J,K)  !sumo260220
-                !MYT(I+1,J,K)=-MYT(I,J,K)  !sumo260220
-                !HKGENE(I,J,K)=(HK(I+1,J,K)-HK(I-1,J,K))*0.50*GX(I)
-                !HKGG(I,J,K)=(HK(I+1,J,K)+HK(I-1,J,K))*GX(I)**2
-                !MYTGENE(I,J,K)=(MYT(I+1,J,K)-MYT(I-1,J,K))*0.50*GX(I)
-                
-                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
-                HKGENE(I,J,K)=(0.0-HK(I-1,J,K))*GX(I)/1.500
-                HKGG(I,J,K)=(0.0+HK(I-1,J,K))*GX(I)**2
-                MYTGENE(I,J,K)=(0.0-MYT(I-1,J,K))*GX(I)/1.500
-            END IF
-            IF(I.EQ.Ipier_D+1) THEN
-                !SLIP CONDITION
-                !HK(I-1,J,K)=HK(I,J,K)
-                !MYT(I-1,J,K)=CS*ABS(HK(I-1,J,K))**0.50*DET(I-1,J,K)
-                
-                !NO-SLIP CONDITION
-                !HK(I-1,J,K)=-HK(I,J,K)  !sumo260220
-                !MYT(I-1,J,K)=-MYT(I,J,K)
-                !HKGENE(I,J,K)=(HK(I+1,J,K)-HK(I-1,J,K))*0.50*GX(I)
-                !HKGG(I,J,K)=(HK(I+1,J,K)+HK(I-1,J,K))*GX(I)**2
-                !MYTGENE(I,J,K)=(MYT(I+1,J,K)-MYT(I-1,J,K))*0.50*GX(I)
-
-                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
-                HKGENE(I,J,K)=(HK(I+1,J,K)-0.0)*GX(I)/1.500
-                HKGG(I,J,K)=(HK(I+1,J,K)+0.0)*GX(I)**2
-                MYTGENE(I,J,K)=(MYT(I+1,J,K)-0.0)*GX(I)/1.500
-            END IF
- 1780   CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 1790 K=3,KMAX+2
-        DO 1790 J=3,JMAX+1
-        DO 1790 I=Ipier_U,Ipier_D
-
-            IF(K.EQ.Kpier_R-1) THEN
-                !SLIP CONDITION
-                !HK(I,J,K+1)=HK(I,J,K)
-                !MYT(I,J,K+1)=CS*ABS(HK(I,J,K+1))**0.50*DET(I,J,K+1)
-                  
-                !NO-SLIP CONDITION
-                !HK(I,J,K+1)=-HK(I,J,K)  !sumo260220
-                !MYT(I,J,K+1)=-MYT(I,J,K)
-                !HKDENE(I,J,K)=(HK(I,J,K+1)-HK(I,J,K-1))*0.50*DZ(K)
-                !HKDD(I,J,K)=(HK(I,J,K+1)+HK(I,J,K-1))*DZ(K)**2
-                !MYTDENE(I,J,K)=(MYT(I,J,K+1)-MYT(I,J,K-1))*0.50*DZ(K)
-                
-                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
-                HKDENE(I,J,K)=(0.0-HK(I,J,K-1))*DZ(K)/1.500
-                HKDD(I,J,K)=(0.0+HK(I,J,K-1))*DZ(K)**2
-                MYTDENE(I,J,K)=(0.0-MYT(I,J,K-1))*DZ(K)/1.500
-            END IF
-            IF(K.EQ.Kpier_L+1) THEN
-                !SLIP CONDITION
-                !HK(I,J,K-1)=HK(I,J,K)
-                !MYT(I,J,K-1)=CS*ABS(HK(I,J,K-1))**0.50*DET(I,J,K-1)
-
-                !NO-SLIP CONDITION
-                !HK(I,J,K-1)=-HK(I,J,K)  !sumo260220
-                !MYT(I,J,K-1)=-MYT(I,J,K)
-                !HKDENE(I,J,K)=(HK(I,J,K+1)-HK(I,J,K-1))*0.50*DZ(K)
-                !HKDD(I,J,K)=(HK(I,J,K+1)+HK(I,J,K-1))*DZ(K)**2
-                !MYTDENE(I,J,K)=(MYT(I,J,K+1)-MYT(I,J,K-1))*0.50*DZ(K)
-
-                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
-                HKDENE(I,J,K)=(HK(I,J,K+1)-0.0)*DZ(K)/1.500
-                HKDD(I,J,K)=(HK(I,J,K+1)+0.0)*DZ(K)**2
-                MYTDENE(I,J,K)=(MYT(I,J,K+1)-0.0)*DZ(K)/1.500
-            END IF
-
- 1790   CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-            END IF
-
-!$OMP PARALLEL
-!$OMP DO
-
-        DO 170 K=3,KMAX+2
-        DO 170 I=3,IMAX+2
-        DO 170 J=3,JMAX+1
-
-            UCK(I,J,K)=-MYT(I,J,K)*CKG(I,J,K)/1.0
-            VCK(I,J,K)=-MYT(I,J,K)*CKE(I,J,K)/1.0
-            WCK(I,J,K)=-MYT(I,J,K)*CKD(I,J,K)/1.0
-
- 170    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!C------------   iryukou  ------------------
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 200 K=3,KMAX+2
-        DO 200 I=3,IMAX+2
-        DO 200 J=3,JMAX+1
-
-!CCC        HK0(I,J,K)=UK(I,J,K)*HKGENE(I,J,K)+VK(I,J,K)*HKEENE(I,J,K)
-!CCCCC        HK0(I,J,K)=UK(I,J,K)*HKGENE(I,J,K)+VK(I,J,K)*HKEENE(I,J,K)
-!CCCCC     &            -ABS(UK(I,J,K))*HKGG(I,J,K)/(2.0*GX(I))
-!CCCCC     &            -ABS(VK(I,J,K))*HKEE(I,J,K)/(2.0*EY(J))
-!CCCCC        AK0(I,J,K)=ABS(UK(I,J,K))*GX(I)+ABS(VK(I,J,K))*EY(J)
-
-            HK0(I,J,K)=UK(I,J,K)*HKGENE(I,J,K)+VK(I,J,K)*HKEENE(I,J,K) &
-                      +WK(I,J,K)*HKDENE(I,J,K) &
-                      -ABS(UK(I,J,K))*HKGG(I,J,K)/(2.0*GX(I)) &
-                      -ABS(VK(I,J,K))*HKEE(I,J,K)/(2.0*EY(J)) &
-                      -ABS(WK(I,J,K))*HKDD(I,J,K)/(2.0*DZ(K))
-
-            AK0(I,J,K)=ABS(UK(I,J,K))*GX(I)+ABS(VK(I,J,K))*EY(J) &
-                      +ABS(WK(I,J,K))*DZ(K)
-
- 200    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!C------------   KAKUSAN ---------------------
-
-!$OMP PARALLEL
-!$OMP DO
-            DO 250 K=3,KMAX+2
-            DO 250 I=3,IMAX+2
-            DO 250 J=3,JMAX+1
-
-                HKN(I,J,K)=MYT(I,J,K)*(HKGG(I,J,K)+HKEE(I,J,K)+HKDD(I,J,K) &
-                          +HKGENE(I,J,K)*GXX(I)/GX(I)+HKEENE(I,J,K)*EYY(J)/EY(J) &
-                          +HKDENE(I,J,K)*DZZ(K)/DZ(K)) &
-                          +1.0*(HKGENE(I,J,K)*MYTGENE(I,J,K) &
-                               +HKEENE(I,J,K)*MYTEENE(I,J,K) &
-                               +HKDENE(I,J,K)*MYTDENE(I,J,K))
-
- 250    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!C------------    production  ------------------
-
-!$OMP PARALLEL
-!$OMP DO
-            DO 300 K=3,KMAX+2
-            DO 300 I=3,IMAX+2
-            DO 300 J=3,JMAX+1
-
-!C        HKP(I,J,K)=MYT(I,J,K)
-!C     &            *(2.0*(UKG(I,J,K)**2+VKE(I,J,K)**2)
-!C     &             +(UKE(I,J,K)+VKG(I,J,K))**2)
-!C     &            -2.0/3.0*HK(I,J,K)*(UKG(I,J,K)+VKE(I,J,K))
-
-                HKP(I,J,K)=MYT(I,J,K) &
-                        *(2.0*(UKG(I,J,K)**2+VKE(I,J,K)**2+WKD(I,J,K)**2) &
-                             +(UKE(I,J,K)+VKG(I,J,K))**2 &
-                             +(UKD(I,J,K)+WKG(I,J,K))**2 &
-                             +(WKE(I,J,K)+VKD(I,J,K))**2) &
-                        -2.0/3.0*HK(I,J,K)*(UKG(I,J,K)+VKE(I,J,K)+WKD(I,J,K))
-
- 300    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!C------------    Drag Force  ------------------
-
-!$OMP PARALLEL
-!$OMP DO
-            DO 320 K=3,KMAX+2
-            DO 320 J=3,JMAX+1
-            DO 320 I=3,IMAX+2
-
-                HTEI(I,J,K)=TEI1(I,J,K)*(UUSRK(I,J,K)+VVSRK(I,J,K)+WWSRK(I,J,K))
-                HTEP(I,J,K)=arfa*TEI1(I,J,K) &
-                            *((ABS(USK(I,J,K)-UK(I,J,K)))**2 &
-                             +(ABS(VSK(I,J,K)-VK(I,J,K)))**2 &
-                             +(ABS(WSK(I,J,K)-WK(I,J,K)))**2)
-                HAMF(I,J,K)=ABS(CK(I,J,K)/(1.0-CK(I,J,K))) &
-                            *( CM0*(0.50*(UUSRK(I,J,K)-UUSRK1(I,J,K))/DT &
-                                   +0.50*(VVSRK(I,J,K)-VVSRK1(I,J,K))/DT &
-                                  +0.50*(WWSRK(I,J,K)-WWSRK1(I,J,K))/DT) &
-                            -(1.0+CM0)*(HK(I,J,K)-HK1(I,J,K))/DT)
-
- 320    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!C--------------  KEISU NO KEISAN  -------------------
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 350 K=3,KMAX+2
-        DO 350 I=3,IMAX+2
-        DO 350 J=3,JMAX+1
-
-!C         DK(I,J,K)=DT*(2.0*MYT(I,J,K)*(GX(I)**2+EY(J)**2+DZ(K)**2)
-!C     &                +AK0(I,J,K))
-
-            DK(I,J,K)=DT*(2.0*MYT(I,J,K)*(GX(I)**2+EY(J)**2+DZ(K)**2) &
-                        +AK0(I,J,K)+2.0*TEI1(I,J,K))
-            IF(K.EQ.3.OR.K.EQ.KMAX+2) THEN
-                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*DZ(K)**2+ &
-                              2.000*MYT(I,J,K)*(EY(J)**2+GX(I)**2) &
-                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
-            END IF
-
- 350    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-IF(pier.EQ.1.0) THEN
-!$OMP PARALLEL
-!$OMP DO
-        DO 1781 I=3,IMAX+2
-        DO 1781 J=3,JMAX+1
-        DO 1781 K=Kpier_R,Kpier_L
-
-            IF(I.EQ.Ipier_U-1) THEN               
-                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
-                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*GX(I)**2+ &
-                              2.000*MYT(I,J,K)*(EY(J)**2+DZ(K)**2) &
-                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
-            END IF
-            IF(I.EQ.Ipier_D+1) THEN
-                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
-                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*GX(I)**2+ &
-                              2.000*MYT(I,J,K)*(EY(J)**2+DZ(K)**2) &
-                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
-            END IF
- 1781   CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 1791 K=3,KMAX+2
-        DO 1791 J=3,JMAX+1
-        DO 1791 I=Ipier_U,Ipier_D
-
-            IF(K.EQ.Kpier_R-1) THEN
-                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
-                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*DZ(K)**2+ &
-                              2.000*MYT(I,J,K)*(EY(J)**2+GX(I)**2) &
-                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
-            END IF
-            IF(K.EQ.Kpier_L+1) THEN
-                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
-                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*DZ(K)**2+ &
-                              2.000*MYT(I,J,K)*(EY(J)**2+GX(I)**2) &
-                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
-            END IF
-
- 1791   CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-            END IF
-
-!C-------------------RESIDURE ----------------------------------
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 400 K=3,KMAX+2
-        DO 400 I=3,IMAX+2
-        DO 400 J=3,JMAX+1
-
-!C         SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K)
-!C     &             +HTEI(I,J,K)+HAMF(I,J,K)-EK(I,J,K)))
-!C     &             /(1.0+DK(I,J,K))-HK(I,J,K)
-
-            SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
-                     +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
-                     /(1.0+DK(I,J,K))-HK(I,J,K)
-
- 400    CONTINUE
-
-!$OMP END DO
-!$OMP END PARALLEL
-
+!
+!!CCCCCC////// Surface Boundary Condition ////////CCCCCC
+!
+!            DO 589 I=3,IMAX+2
+!            DO 589 K=3,KMAX+2
+!            DO 589 J=IETA(I,K),JMAX+3
+!                !水面における乱流エネルギーの計算
+!                IF(DEPMODE.EQ.1.0) THEN
+!                    HK(I,J,K)=HK(I,IETA(I,K)-1,K)
+!                END IF
+!
+! 589    CONTINUE
+!
+!!CCCCCC////// Pier Boundary Condition ////////CCCCCC
+!
+!        !IF(pier.EQ.1.0) THEN
+!
+!            !DO 701 J=1,JMAX+3
+!            !DO 701 K=Kpier_R,Kpier_L
+!            !DO 701 I=Ipier_U,Ipier_D
+!
+!                !HK(I,J,K)=HK(I,J,Kpier_L+1)
+!                !HK(Ipier_D,J,K)=HK(Ipier_D+1,J,K)
+!                !!HK(I,J,Kpier_R)=HK(I,J,Kpier_R-1)
+!                !!HK(I,J,Kpier_L)=HK(I,J,Kpier_L+1)
+!                !HK(Ipier_U,J,K)=HK(Ipier_U-1,J,K)
+!                !!HK(I,J,K)=HK(Ipier_U-1,J,K)
+!
+! 701    CONTINUE
+!
+!        !END IF
+!        !IF(pier.EQ.1.0) THEN
+!
+!            !DO 7011 J=1,JMAX+3
+!            !DO 7011 K=Kpier_R1,Kpier_L1
+!            !DO 7011 I=Ipier_U1,Ipier_D1
+!
+!                !HK(Ipier_D1,J,K)=HK(Ipier_D1+1,J,K)
+!                !!HK(I,J,Kpier_R1)=HK(I,J,Kpier_R1-1)
+!                !!HK(I,J,Kpier_L1)=HK(I,J,Kpier_L1+1)
+!                !HK(I,J,K)=HK(I,J,Kpier_L1+1)
+!                !HK(Ipier_U1,J,K)=HK(Ipier_U1-1,J,K)
+!
+! 7011  CONTINUE
+!
+!        !END IF
+!        !IF(pier.EQ.1.0) THEN
+!
+!            !DO 7012 J=1,JMAX+3
+!            !DO 7012 K=Kpier_R2,Kpier_L2
+!            !DO 7012 I=Ipier_U2,Ipier_D2
+!
+!                !HK(Ipier_D2,J,K)=HK(Ipier_D2+1,J,K)
+!                !!HK(I,J,Kpier_R2)=HK(I,J,Kpier_R2-1)
+!                !!HK(I,J,Kpier_L2)=HK(I,J,Kpier_L2+1)
+!                !HK(I,J,K)=HK(I,J,Kpier_R2-1)
+!                !HK(Ipier_U2,J,K)=HK(Ipier_U2-1,J,K)
+!
+! 7012   CONTINUE
+!
+!        !END IF
+!        !IF(pier.EQ.1.0) THEN
+!
+!            !DO 7013 J=1,JMAX+3
+!            !DO 7013 K=Kpier_R3,Kpier_L3
+!            !DO 7013 I=Ipier_U3,Ipier_D3
+!
+!                !HK(Ipier_D3,J,K)=HK(Ipier_D3+1,J,K)
+!                !!HK(I,J,Kpier_R1)=HK(I,J,Kpier_R1-1)
+!                !!HK(I,J,Kpier_L1)=HK(I,J,Kpier_L1+1)
+!                !HK(I,J,K)=HK(I,J,Kpier_L3+1)
+!                !HK(Ipier_U3,J,K)=HK(Ipier_U3-1,J,K)
+!
+! 7013   CONTINUE
+!
+!        !END IF
+!        !IF(pier.EQ.1.0) THEN
+!
+!            !DO 7014 J=1,JMAX+3
+!            !DO 7014 K=Kpier_R4,Kpier_L4
+!            !DO 7014 I=Ipier_U4,Ipier_D4
+!
+!                !HK(Ipier_D4,J,K)=HK(Ipier_D4+1,J,K)
+!                !!HK(I,J,Kpier_R2)=HK(I,J,Kpier_R2-1)
+!                !!HK(I,J,Kpier_L2)=HK(I,J,Kpier_L2+1)
+!                !HK(I,J,K)=HK(I,J,Kpier_R4-1)
+!                !HK(Ipier_U4,J,K)=HK(Ipier_U4-1,J,K)
+!
+! 7014   CONTINUE
+!
+!        !END IF
+!
+!!******************** ?ｿｽﾇ鯉ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽf?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ ********************
+!!!$OMP PARALLEL
+!!!$OMP DO
+!!        DO 6751 I=3,IMAX+2
+!!        DO 6751 J=3,JMAX+1
+!!        DO 6751 K=3,KMAX+2
+!!
+!!            USTABRW(I,J)=ABS(U(I,J,3)/(1.0/0.40*LOG(USTABRW1(I,J)*0.50/EY(3)/RED)+5.50))+0.01
+!!            USTABLW(I,J)=ABS(U(I,J,KMAX+2)/(1.0/0.40*LOG(USTABLW1(I,J)*0.50/EY(3)/RED)+5.50))+0.01
+!!            USTABRW_P(I,J)=ABS(U(I,J,Kpier_R-1)/(1.0/0.40*LOG(USTABRW_P1(I,J)*0.50/EY(3)/RED)+5.50))+0.01
+!!            USTABLW_P(I,J)=ABS(U(I,J,Kpier_L+1)/(1.0/0.40*LOG(USTABLW_P1(I,J)*0.50/EY(3)/RED)+5.50))+0.01
+!!            WSTABFW_P(J,K)=ABS(W(Ipier_U-1,J,K)/(1.0/0.40*LOG(WSTABFW_P1(J,K)*0.50/EY(3)/RED)+5.50))+0.01
+!!            WSTABBW_P(J,K)=ABS(W(Ipier_D+1,J,K)/(1.0/0.40*LOG(WSTABBW_P1(J,K)*0.50/EY(3)/RED)+5.50))+0.01
+!!            
+!! 6751     CONTINUE
+!!!$OMP END DO
+!!!$OMP END PARALLEL
+!!
+!!!$OMP PARALLEL
+!!!$OMP DO
+!!        DO 6750 K=3,KMAX+2
+!!        DO 6750 I=3,IMAX+2
+!!        DO 6750 J=3,JMAX+1
+!!
+!!            WDF1(I,J,K)=(ABS(Z(I,3,K)-(Z(I,3,3)-0.50/DZ(3))))*USTABRW(I,J)/RED
+!!            WDF2(I,J,K)=(ABS(Z(I,3,K)-(Z(I,3,KMAX+2)+0.50/DZ(3))))*USTABLW(I,J)/RED
+!!            FW1(I,J,K)=1.0-(EXP(-WDF1(I,J,K)/25.0))
+!!            FW2(I,J,K)=1.0-(EXP(-WDF2(I,J,K)/25.0))
+!!            IF(pier.EQ.1.0) THEN
+!!                WDF3(I,J,K)=(ABS(X(I,3,K)-(X(Ipier_U,3,K)-0.50/GX(3))))*WSTABFW_P(J,K)/RED
+!!                WDF4(I,J,K)=(ABS(X(I,3,K)-(X(Ipier_D,3,K)+0.50/GX(3))))*WSTABBW_P(J,K)/RED
+!!                WDF5(I,J,K)=(ABS(Z(I,3,K)-(Z(I,3,Kpier_R)-0.50/DZ(3))))*USTABRW_P(I,J)/RED
+!!                WDF6(I,J,K)=(ABS(Z(I,3,K)-(Z(I,3,Kpier_L)+0.50/DZ(3))))*USTABLW_P(I,J)/RED
+!!                FW3(I,J,K)=1.0-(EXP(-WDF3(I,J,K)/25.0))
+!!                FW4(I,J,K)=1.0-(EXP(-WDF4(I,J,K)/25.0))
+!!                FW5(I,J,K)=1.0-(EXP(-WDF5(I,J,K)/25.0))
+!!                FW6(I,J,K)=1.0-(EXP(-WDF6(I,J,K)/25.0))
+!!            END IF
+!!            
+!! 6750     CONTINUE
+!!!$OMP END DO
+!!!$OMP END PARALLEL
+!
+!!?ｿｽﾇ鯉ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽl?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ?ｿｽ sumo260223
+!        CKC=0.08
 !!$OMP PARALLEL
 !!$OMP DO
-!        DO 178 I=3,IMAX+2
-!        DO 178 J=3,JMAX+1
-!        DO 178 K=Kpier_R,Kpier_L
-!!
+!        DO 1660 K=2,KMAX+3
+!        DO 1660 I=2,IMAX+3
+!        DO 1660 J=2,JMAX+2
+!
+!            DETN(I,J,K)=DET(I,J,K)/(1.0+CKC*(DET(I,J,K)**2) &
+!                       *(0.500*((2.0*UKG(I,J,K))**2+(2.0*VKE(I,J,K))**2+(2.0*WKD(I,J,K))**2 &
+!                       +(UKE(I,J,K)+VKG(I,J,K))**2+(UKD(I,J,K)+WKG(I,J,K))**2+(VKD(I,J,K)+WKE(I,J,K))**2)) &
+!                       /HK(I,J,K))
+!
+! 1660   CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!!C**********  VORTEX DIFUSION COEF  **************
+!
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 50 K=1,KMAX+4
+!        DO 50 I=1,IMAX+4
+!        DO 50 J=1,JMAX+3
+!
+!            EK(I,J,K)=CE*ABS(HK(I,J,K))**1.50/DET(I,J,K)
+!            MYT(I,J,K)=CS*ABS(HK(I,J,K))**0.50*DETN(I,J,K)
+!            !MYT(I,J,K)=CS*ABS(HK(I,J,K)*FW1(I,J,K)*FW2(I,J,K))**0.50*DET(I,J,K)
+!            !IF(pier.EQ.1.0) THEN
+!            !    MYT(I,J,K)=CS*ABS(HK(I,J,K))**0.50*DET(I,J,K)*FW1(I,J,K)*FW2(I,J,K)*FW6(I,J,K)
+!            !END IF
+!
+! 50     CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 150 K=3,KMAX+2
+!        DO 150 I=3,IMAX+2
+!        DO 150 J=3,JMAX+1
+!
+!            HKGENE(I,J,K)=(HK(I+1,J,K)-HK(I-1,J,K))*0.50*GX(I)
+!            HKEENE(I,J,K)=(HK(I,J+1,K)-HK(I,J-1,K))*0.50*EY(J)
+!            HKDENE(I,J,K)=(HK(I,J,K+1)-HK(I,J,K-1))*0.50*DZ(K)
+!
+!            HKGG(I,J,K)=(HK(I+1,J,K)+HK(I-1,J,K))*GX(I)**2
+!            HKEE(I,J,K)=(HK(I,J+1,K)+HK(I,J-1,K))*EY(J)**2
+!            HKDD(I,J,K)=(HK(I,J,K+1)+HK(I,J,K-1))*DZ(K)**2
+!
+!            MYTGENE(I,J,K)=(MYT(I+1,J,K)-MYT(I-1,J,K))*0.50*GX(I)
+!            MYTEENE(I,J,K)=(MYT(I,J+1,K)-MYT(I,J-1,K))*0.50*EY(J)
+!            MYTDENE(I,J,K)=(MYT(I,J,K+1)-MYT(I,J,K-1))*0.50*DZ(K)
+!
+! 150    CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!!********** OKUYUKI & TEMAE NO JYOUKEN **********!
+!
+!            !DO 700 J=1,JMAX+3
+!            !DO 700 I=1,IMAX+4
+!
+!            !    !NO-SLIP
+!            !    !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
+!            !    HKDENE(I,J,3)=(HK(I,J,4)-0.0)*DZ(K)/1.500
+!            !    HKDD(I,J,3)=(HK(I,J,4)+0.0)*DZ(K)**2
+!            !    MYTDENE(I,J,3)=(MYT(I,J,4)-0.0)*DZ(K)/1.500
+!            !
+!            !    HKDENE(I,J,KMAX+2)=(0.0-HK(I,J,KMAX+1))*DZ(K)/1.500
+!            !    HKDD(I,J,KMAX+2)=(0.0+HK(I,J,KMAX+1))*DZ(K)**2
+!            !    MYTDENE(I,J,KMAX+2)=(0.0-MYT(I,J,KMAX+1))*DZ(K)/1.500
+!
+!! 700  CONTINUE
+!
 !            IF(pier.EQ.1.0) THEN
-!                IF(I.EQ.Ipier_U-1) THEN
-!                    HK(Ipier_U,J,K)=HK(Ipier_U-1,J,K)
-!                    SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
-!                             +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
-!                             /(1.0+DK(I,J,K))-HK(I,J,K)
-!                END IF
-!                IF(I.EQ.Ipier_D+1) THEN
-!                    HK(Ipier_D,J,K)=HK(Ipier_D+1,J,K)
-!                    SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
-!                             +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
-!                             /(1.0+DK(I,J,K))-HK(I,J,K)
-!                END IF
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 1780 I=3,IMAX+2
+!        DO 1780 J=3,JMAX+1
+!        DO 1780 K=Kpier_R,Kpier_L
+!
+!            IF(I.EQ.Ipier_U-1) THEN
+!                !SLIP CONDITION
+!                !HK(I+1,J,K)=HK(I,J,K)
+!                !MYT(I+1,J,K)=CS*ABS(HK(I+1,J,K))**0.50*DET(I+1,J,K)
+!
+!                !NO-SLIP CONDITION
+!                !HK(I+1,J,K)=-HK(I,J,K)  !sumo260220
+!                !MYT(I+1,J,K)=-MYT(I,J,K)  !sumo260220
+!                !HKGENE(I,J,K)=(HK(I+1,J,K)-HK(I-1,J,K))*0.50*GX(I)
+!                !HKGG(I,J,K)=(HK(I+1,J,K)+HK(I-1,J,K))*GX(I)**2
+!                !MYTGENE(I,J,K)=(MYT(I+1,J,K)-MYT(I-1,J,K))*0.50*GX(I)
+!                
+!                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
+!                HKGENE(I,J,K)=(0.0-HK(I-1,J,K))*GX(I)/1.500
+!                HKGG(I,J,K)=(0.0+HK(I-1,J,K))*GX(I)**2
+!                MYTGENE(I,J,K)=(0.0-MYT(I-1,J,K))*GX(I)/1.500
 !            END IF
-! 178    CONTINUE
-!!$OMP END DO
-!!$OMP END PARALLEL
-!!
-!!$OMP PARALLEL
-!!$OMP DO
-!        DO 179 K=3,KMAX+2
-!        DO 179 J=3,JMAX+1
-!        DO 179 I=Ipier_U,Ipier_D
-!!
-!            IF(pier.EQ.1.0) THEN
-!                IF(K.EQ.Kpier_R-1) THEN
-!                    HK(I,J,Kpier_R)=HK(I,J,Kpier_R-1)
-!                    SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
-!                             +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
-!                             /(1.0+DK(I,J,K))-HK(I,J,K)
-!                END IF
-!                IF(K.EQ.Kpier_L+1) THEN
-!                    HK(I,J,Kpier_L)=HK(I,J,Kpier_L+1)
-!                    SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
-!                             +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
-!                             /(1.0+DK(I,J,K))-HK(I,J,K)
-!                END IF
+!            IF(I.EQ.Ipier_D+1) THEN
+!                !SLIP CONDITION
+!                !HK(I-1,J,K)=HK(I,J,K)
+!                !MYT(I-1,J,K)=CS*ABS(HK(I-1,J,K))**0.50*DET(I-1,J,K)
+!                
+!                !NO-SLIP CONDITION
+!                !HK(I-1,J,K)=-HK(I,J,K)  !sumo260220
+!                !MYT(I-1,J,K)=-MYT(I,J,K)
+!                !HKGENE(I,J,K)=(HK(I+1,J,K)-HK(I-1,J,K))*0.50*GX(I)
+!                !HKGG(I,J,K)=(HK(I+1,J,K)+HK(I-1,J,K))*GX(I)**2
+!                !MYTGENE(I,J,K)=(MYT(I+1,J,K)-MYT(I-1,J,K))*0.50*GX(I)
+!
+!                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
+!                HKGENE(I,J,K)=(HK(I+1,J,K)-0.0)*GX(I)/1.500
+!                HKGG(I,J,K)=(HK(I+1,J,K)+0.0)*GX(I)**2
+!                MYTGENE(I,J,K)=(MYT(I+1,J,K)-0.0)*GX(I)/1.500
 !            END IF
-!!
-! 179    CONTINUE
+! 1780   CONTINUE
 !!$OMP END DO
 !!$OMP END PARALLEL
-
-!CCCCCC////// Surface Boundary Condition ////////CCCCCC
-
-!$OMP PARALLEL
-!$OMP DO
-        DO 532 I=3,IMAX+2
-        DO 532 K=3,KMAX+2
-        DO 532 J=IETA(I,K),JMAX+1
-
-            IF(DEPMODE.EQ.1.0) THEN
-                SK(I,J,K)=0.0
-            END IF
-
- 532    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-
+!
 !!$OMP PARALLEL
 !!$OMP DO
-        !DO 534 I=3,IMAX+2
-        !O 534 K=3,KMAX+2
-        !DO 534 J=3,IGL(I,K)
-
-            !SK(I,J,K)=0.0
-
- 534    CONTINUE
+!        DO 1790 K=3,KMAX+2
+!        DO 1790 J=3,JMAX+1
+!        DO 1790 I=Ipier_U,Ipier_D
+!
+!            IF(K.EQ.Kpier_R-1) THEN
+!                !SLIP CONDITION
+!                !HK(I,J,K+1)=HK(I,J,K)
+!                !MYT(I,J,K+1)=CS*ABS(HK(I,J,K+1))**0.50*DET(I,J,K+1)
+!                  
+!                !NO-SLIP CONDITION
+!                !HK(I,J,K+1)=-HK(I,J,K)  !sumo260220
+!                !MYT(I,J,K+1)=-MYT(I,J,K)
+!                !HKDENE(I,J,K)=(HK(I,J,K+1)-HK(I,J,K-1))*0.50*DZ(K)
+!                !HKDD(I,J,K)=(HK(I,J,K+1)+HK(I,J,K-1))*DZ(K)**2
+!                !MYTDENE(I,J,K)=(MYT(I,J,K+1)-MYT(I,J,K-1))*0.50*DZ(K)
+!                
+!                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
+!                HKDENE(I,J,K)=(0.0-HK(I,J,K-1))*DZ(K)/1.500
+!                HKDD(I,J,K)=(0.0+HK(I,J,K-1))*DZ(K)**2
+!                MYTDENE(I,J,K)=(0.0-MYT(I,J,K-1))*DZ(K)/1.500
+!            END IF
+!            IF(K.EQ.Kpier_L+1) THEN
+!                !SLIP CONDITION
+!                !HK(I,J,K-1)=HK(I,J,K)
+!                !MYT(I,J,K-1)=CS*ABS(HK(I,J,K-1))**0.50*DET(I,J,K-1)
+!
+!                !NO-SLIP CONDITION
+!                !HK(I,J,K-1)=-HK(I,J,K)  !sumo260220
+!                !MYT(I,J,K-1)=-MYT(I,J,K)
+!                !HKDENE(I,J,K)=(HK(I,J,K+1)-HK(I,J,K-1))*0.50*DZ(K)
+!                !HKDD(I,J,K)=(HK(I,J,K+1)+HK(I,J,K-1))*DZ(K)**2
+!                !MYTDENE(I,J,K)=(MYT(I,J,K+1)-MYT(I,J,K-1))*0.50*DZ(K)
+!
+!                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
+!                HKDENE(I,J,K)=(HK(I,J,K+1)-0.0)*DZ(K)/1.500
+!                HKDD(I,J,K)=(HK(I,J,K+1)+0.0)*DZ(K)**2
+!                MYTDENE(I,J,K)=(MYT(I,J,K+1)-0.0)*DZ(K)/1.500
+!            END IF
+!
+! 1790   CONTINUE
 !!$OMP END DO
 !!$OMP END PARALLEL
-
-!CCCCCC////// Pier Boundary Condition ////////CCCCCC
-
-        IF(pier.EQ.1.0) THEN
-!$OMP PARALLEL
-!$OMP DO
-            DO 702 J=1,JMAX+3
-            DO 702 K=Kpier_R,Kpier_L
-            DO 702 I=Ipier_U,Ipier_D
-
-                SK(I,J,K)=0.0
-
- 702    CONTINUE
-!$OMP END DO
-!$OMP END PARALLEL
-        !END IF
-        !IF(pier.EQ.1.0) THEN
+!            END IF
+!
 !!$OMP PARALLEL
 !!$OMP DO
-            !DO 7022 J=1,JMAX+3
-            !DO 7022 K=Kpier_R1,Kpier_L1
-            !DO 7022 I=Ipier_U1,Ipier_D1
-
-                !SK(I,J,K)=0.0
-
- 7022   CONTINUE
+!
+!        DO 170 K=3,KMAX+2
+!        DO 170 I=3,IMAX+2
+!        DO 170 J=3,JMAX+1
+!
+!            UCK(I,J,K)=-MYT(I,J,K)*CKG(I,J,K)/1.0
+!            VCK(I,J,K)=-MYT(I,J,K)*CKE(I,J,K)/1.0
+!            WCK(I,J,K)=-MYT(I,J,K)*CKD(I,J,K)/1.0
+!
+! 170    CONTINUE
 !!$OMP END DO
 !!$OMP END PARALLEL
-        !END IF
-        !IF(pier.EQ.1.0) THEN
+!
+!!C------------   iryukou  ------------------
+!
 !!$OMP PARALLEL
 !!$OMP DO
-            !DO 7023 J=1,JMAX+3
-            !DO 7023 K=Kpier_R2,Kpier_L2
-            !DO 7023 I=Ipier_U2,Ipier_D2
-
-                !SK(I,J,K)=0.0
-
- 7023   CONTINUE
+!        DO 200 K=3,KMAX+2
+!        DO 200 I=3,IMAX+2
+!        DO 200 J=3,JMAX+1
+!
+!!CCC        HK0(I,J,K)=UK(I,J,K)*HKGENE(I,J,K)+VK(I,J,K)*HKEENE(I,J,K)
+!!CCCCC        HK0(I,J,K)=UK(I,J,K)*HKGENE(I,J,K)+VK(I,J,K)*HKEENE(I,J,K)
+!!CCCCC     &            -ABS(UK(I,J,K))*HKGG(I,J,K)/(2.0*GX(I))
+!!CCCCC     &            -ABS(VK(I,J,K))*HKEE(I,J,K)/(2.0*EY(J))
+!!CCCCC        AK0(I,J,K)=ABS(UK(I,J,K))*GX(I)+ABS(VK(I,J,K))*EY(J)
+!
+!            HK0(I,J,K)=UK(I,J,K)*HKGENE(I,J,K)+VK(I,J,K)*HKEENE(I,J,K) &
+!                      +WK(I,J,K)*HKDENE(I,J,K) &
+!                      -ABS(UK(I,J,K))*HKGG(I,J,K)/(2.0*GX(I)) &
+!                      -ABS(VK(I,J,K))*HKEE(I,J,K)/(2.0*EY(J)) &
+!                      -ABS(WK(I,J,K))*HKDD(I,J,K)/(2.0*DZ(K))
+!
+!            AK0(I,J,K)=ABS(UK(I,J,K))*GX(I)+ABS(VK(I,J,K))*EY(J) &
+!                      +ABS(WK(I,J,K))*DZ(K)
+!
+! 200    CONTINUE
 !!$OMP END DO
 !!$OMP END PARALLEL
-        !END IF
-        !IF(pier.EQ.1.0) THEN
+!
+!!C------------   KAKUSAN ---------------------
+!
 !!$OMP PARALLEL
 !!$OMP DO
-            !DO 7024 J=1,JMAX+3
-            !DO 7024 K=Kpier_R3,Kpier_L3
-            !DO 7024 I=Ipier_U3,Ipier_D3
-
-                !SK(I,J,K)=0.0
-
- 7024   CONTINUE
+!            DO 250 K=3,KMAX+2
+!            DO 250 I=3,IMAX+2
+!            DO 250 J=3,JMAX+1
+!
+!                HKN(I,J,K)=MYT(I,J,K)*(HKGG(I,J,K)+HKEE(I,J,K)+HKDD(I,J,K) &
+!                          +HKGENE(I,J,K)*GXX(I)/GX(I)+HKEENE(I,J,K)*EYY(J)/EY(J) &
+!                          +HKDENE(I,J,K)*DZZ(K)/DZ(K)) &
+!                          +1.0*(HKGENE(I,J,K)*MYTGENE(I,J,K) &
+!                               +HKEENE(I,J,K)*MYTEENE(I,J,K) &
+!                               +HKDENE(I,J,K)*MYTDENE(I,J,K))
+!
+! 250    CONTINUE
 !!$OMP END DO
 !!$OMP END PARALLEL
-        !END IF
-        !IF(pier.EQ.1.0) THEN
+!
+!!C------------    production  ------------------
+!
 !!$OMP PARALLEL
 !!$OMP DO
-            !DO 7025 J=1,JMAX+3
-            !DO 7025 K=Kpier_R4,Kpier_L4
-            !DO 7025 I=Ipier_U4,Ipier_D4
-
-                !SK(I,J,K)=0.0
-
- 7025   CONTINUE
+!            DO 300 K=3,KMAX+2
+!            DO 300 I=3,IMAX+2
+!            DO 300 J=3,JMAX+1
+!
+!!C        HKP(I,J,K)=MYT(I,J,K)
+!!C     &            *(2.0*(UKG(I,J,K)**2+VKE(I,J,K)**2)
+!!C     &             +(UKE(I,J,K)+VKG(I,J,K))**2)
+!!C     &            -2.0/3.0*HK(I,J,K)*(UKG(I,J,K)+VKE(I,J,K))
+!
+!                HKP(I,J,K)=MYT(I,J,K) &
+!                        *(2.0*(UKG(I,J,K)**2+VKE(I,J,K)**2+WKD(I,J,K)**2) &
+!                             +(UKE(I,J,K)+VKG(I,J,K))**2 &
+!                             +(UKD(I,J,K)+WKG(I,J,K))**2 &
+!                             +(WKE(I,J,K)+VKD(I,J,K))**2) &
+!                        -2.0/3.0*HK(I,J,K)*(UKG(I,J,K)+VKE(I,J,K)+WKD(I,J,K))
+!
+! 300    CONTINUE
 !!$OMP END DO
-!!OMP END PARALLEL
-        END IF
+!!$OMP END PARALLEL
+!
+!!C------------    Drag Force  ------------------
+!
+!!$OMP PARALLEL
+!!$OMP DO
+!            DO 320 K=3,KMAX+2
+!            DO 320 J=3,JMAX+1
+!            DO 320 I=3,IMAX+2
+!
+!                HTEI(I,J,K)=TEI1(I,J,K)*(UUSRK(I,J,K)+VVSRK(I,J,K)+WWSRK(I,J,K))
+!                HTEP(I,J,K)=arfa*TEI1(I,J,K) &
+!                            *((ABS(USK(I,J,K)-UK(I,J,K)))**2 &
+!                             +(ABS(VSK(I,J,K)-VK(I,J,K)))**2 &
+!                             +(ABS(WSK(I,J,K)-WK(I,J,K)))**2)
+!                HAMF(I,J,K)=ABS(CK(I,J,K)/(1.0-CK(I,J,K))) &
+!                            *( CM0*(0.50*(UUSRK(I,J,K)-UUSRK1(I,J,K))/DT &
+!                                   +0.50*(VVSRK(I,J,K)-VVSRK1(I,J,K))/DT &
+!                                  +0.50*(WWSRK(I,J,K)-WWSRK1(I,J,K))/DT) &
+!                            -(1.0+CM0)*(HK(I,J,K)-HK1(I,J,K))/DT)
+!
+! 320    CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!!C--------------  KEISU NO KEISAN  -------------------
+!
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 350 K=3,KMAX+2
+!        DO 350 I=3,IMAX+2
+!        DO 350 J=3,JMAX+1
+!
+!!C         DK(I,J,K)=DT*(2.0*MYT(I,J,K)*(GX(I)**2+EY(J)**2+DZ(K)**2)
+!!C     &                +AK0(I,J,K))
+!
+!            DK(I,J,K)=DT*(2.0*MYT(I,J,K)*(GX(I)**2+EY(J)**2+DZ(K)**2) &
+!                        +AK0(I,J,K)+2.0*TEI1(I,J,K))
+!            IF(K.EQ.3.OR.K.EQ.KMAX+2) THEN
+!                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*DZ(K)**2+ &
+!                              2.000*MYT(I,J,K)*(EY(J)**2+GX(I)**2) &
+!                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
+!            END IF
+!
+! 350    CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!IF(pier.EQ.1.0) THEN
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 1781 I=3,IMAX+2
+!        DO 1781 J=3,JMAX+1
+!        DO 1781 K=Kpier_R,Kpier_L
+!
+!            IF(I.EQ.Ipier_U-1) THEN               
+!                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
+!                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*GX(I)**2+ &
+!                              2.000*MYT(I,J,K)*(EY(J)**2+DZ(K)**2) &
+!                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
+!            END IF
+!            IF(I.EQ.Ipier_D+1) THEN
+!                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
+!                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*GX(I)**2+ &
+!                              2.000*MYT(I,J,K)*(EY(J)**2+DZ(K)**2) &
+!                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
+!            END IF
+! 1781   CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 1791 K=3,KMAX+2
+!        DO 1791 J=3,JMAX+1
+!        DO 1791 I=Ipier_U,Ipier_D
+!
+!            IF(K.EQ.Kpier_R-1) THEN
+!                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
+!                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*DZ(K)**2+ &
+!                              2.000*MYT(I,J,K)*(EY(J)**2+GX(I)**2) &
+!                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
+!            END IF
+!            IF(K.EQ.Kpier_L+1) THEN
+!                !WALL ?ｿｽﾌ位置?ｿｽﾉ具ｿｽ?ｿｽ?ｿｽ?ｿｽI?ｿｽ?ｿｽ0?ｿｽ?ｿｽ^?ｿｽ?ｿｽ?ｿｽ?ｿｽ
+!                DK(I,J,K)=DT*(1.500*MYT(I,J,K)*DZ(K)**2+ &
+!                              2.000*MYT(I,J,K)*(EY(J)**2+GX(I)**2) &
+!                              +AK0(I,J,K)+2.0*TEI1(I,J,K))
+!            END IF
+!
+! 1791   CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!            END IF
+!
+!!C-------------------RESIDURE ----------------------------------
+!
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 400 K=3,KMAX+2
+!        DO 400 I=3,IMAX+2
+!        DO 400 J=3,JMAX+1
+!
+!!C         SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K)
+!!C     &             +HTEI(I,J,K)+HAMF(I,J,K)-EK(I,J,K)))
+!!C     &             /(1.0+DK(I,J,K))-HK(I,J,K)
+!
+!            SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
+!                     +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
+!                     /(1.0+DK(I,J,K))-HK(I,J,K)
+!
+! 400    CONTINUE
+!
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!!!$OMP PARALLEL
+!!!$OMP DO
+!!        DO 178 I=3,IMAX+2
+!!        DO 178 J=3,JMAX+1
+!!        DO 178 K=Kpier_R,Kpier_L
+!!!
+!!            IF(pier.EQ.1.0) THEN
+!!                IF(I.EQ.Ipier_U-1) THEN
+!!                    HK(Ipier_U,J,K)=HK(Ipier_U-1,J,K)
+!!                    SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
+!!                             +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
+!!                             /(1.0+DK(I,J,K))-HK(I,J,K)
+!!                END IF
+!!                IF(I.EQ.Ipier_D+1) THEN
+!!                    HK(Ipier_D,J,K)=HK(Ipier_D+1,J,K)
+!!                    SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
+!!                             +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
+!!                             /(1.0+DK(I,J,K))-HK(I,J,K)
+!!                END IF
+!!            END IF
+!! 178    CONTINUE
+!!!$OMP END DO
+!!!$OMP END PARALLEL
+!!!
+!!!$OMP PARALLEL
+!!!$OMP DO
+!!        DO 179 K=3,KMAX+2
+!!        DO 179 J=3,JMAX+1
+!!        DO 179 I=Ipier_U,Ipier_D
+!!!
+!!            IF(pier.EQ.1.0) THEN
+!!                IF(K.EQ.Kpier_R-1) THEN
+!!                    HK(I,J,Kpier_R)=HK(I,J,Kpier_R-1)
+!!                    SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
+!!                             +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
+!!                             /(1.0+DK(I,J,K))-HK(I,J,K)
+!!                END IF
+!!                IF(K.EQ.Kpier_L+1) THEN
+!!                    HK(I,J,Kpier_L)=HK(I,J,Kpier_L+1)
+!!                    SK(I,J,K)=(HK1(I,J,K)+DT*(-HK0(I,J,K)+HKN(I,J,K)+HKP(I,J,K) &
+!!                             +HTEP(I,J,K)+HTEI(I,J,K)+HAMF(I,J,K)*0.0-EK(I,J,K))) &
+!!                             /(1.0+DK(I,J,K))-HK(I,J,K)
+!!                END IF
+!!            END IF
+!!!
+!! 179    CONTINUE
+!!!$OMP END DO
+!!!$OMP END PARALLEL
+!
+!!CCCCCC////// Surface Boundary Condition ////////CCCCCC
+!
+!!$OMP PARALLEL
+!!$OMP DO
+!        DO 532 I=3,IMAX+2
+!        DO 532 K=3,KMAX+2
+!        DO 532 J=IETA(I,K),JMAX+1
+!
+!            IF(DEPMODE.EQ.1.0) THEN
+!                SK(I,J,K)=0.0
+!            END IF
+!
+! 532    CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!
+!!!$OMP PARALLEL
+!!!$OMP DO
+!        !DO 534 I=3,IMAX+2
+!        !O 534 K=3,KMAX+2
+!        !DO 534 J=3,IGL(I,K)
+!
+!            !SK(I,J,K)=0.0
+!
+! 534    CONTINUE
+!!!$OMP END DO
+!!!$OMP END PARALLEL
+!
+!!CCCCCC////// Pier Boundary Condition ////////CCCCCC
+!
+!        IF(pier.EQ.1.0) THEN
+!!$OMP PARALLEL
+!!$OMP DO
+!            DO 702 J=1,JMAX+3
+!            DO 702 K=Kpier_R,Kpier_L
+!            DO 702 I=Ipier_U,Ipier_D
+!
+!                SK(I,J,K)=0.0
+!
+! 702    CONTINUE
+!!$OMP END DO
+!!$OMP END PARALLEL
+!        !END IF
+!        !IF(pier.EQ.1.0) THEN
+!!!$OMP PARALLEL
+!!!$OMP DO
+!            !DO 7022 J=1,JMAX+3
+!            !DO 7022 K=Kpier_R1,Kpier_L1
+!            !DO 7022 I=Ipier_U1,Ipier_D1
+!
+!                !SK(I,J,K)=0.0
+!
+! 7022   CONTINUE
+!!!$OMP END DO
+!!!$OMP END PARALLEL
+!        !END IF
+!        !IF(pier.EQ.1.0) THEN
+!!!$OMP PARALLEL
+!!!$OMP DO
+!            !DO 7023 J=1,JMAX+3
+!            !DO 7023 K=Kpier_R2,Kpier_L2
+!            !DO 7023 I=Ipier_U2,Ipier_D2
+!
+!                !SK(I,J,K)=0.0
+!
+! 7023   CONTINUE
+!!!$OMP END DO
+!!!$OMP END PARALLEL
+!        !END IF
+!        !IF(pier.EQ.1.0) THEN
+!!!$OMP PARALLEL
+!!!$OMP DO
+!            !DO 7024 J=1,JMAX+3
+!            !DO 7024 K=Kpier_R3,Kpier_L3
+!            !DO 7024 I=Ipier_U3,Ipier_D3
+!
+!                !SK(I,J,K)=0.0
+!
+! 7024   CONTINUE
+!!!$OMP END DO
+!!!$OMP END PARALLEL
+!        !END IF
+!        !IF(pier.EQ.1.0) THEN
+!!!$OMP PARALLEL
+!!!$OMP DO
+!            !DO 7025 J=1,JMAX+3
+!            !DO 7025 K=Kpier_R4,Kpier_L4
+!            !DO 7025 I=Ipier_U4,Ipier_D4
+!
+!                !SK(I,J,K)=0.0
+!
+! 7025   CONTINUE
+!!!$OMP END DO
+!!!OMP END PARALLEL
+!        END IF
+!       
+        !動粘性係数
+        RED = 0.01D0
 
         DO 450 K=3,KMAX+2
         DO 450 I=3,IMAX+2
         DO 450 J=3,JMAX+1
 
-            HK(I,J,K)=HK(I,J,K)+CONST2*SK(I,J,K)
+!            HK(I,J,K)=HK(I,J,K)+CONST2*SK(I,J,K)
 
 !C     Smagorinsky Model !
 
         SK(I,J,K)=0.0
         HK(I,J,K)=0.0
-        MYT(I,J,K)=(0.1*DET(I,J,K))**2.0 &
+        
+        !van driest減衰関数の導入  !ito 260318
+        USTAB(I,K)=1.5290D0 !ITO CHANGE
+        
+        VANFUNC(I,J,K) = (1-EXP(-USTAB(I,K)*((J-(FLOAT(IGL(I,K))+0.500))/EY(3)/RED)/25))**(2/3) !ito 260318
+
+        MYT(I,J,K)=(0.1*DET(I,J,K)*VANFUNC(I,J,K))**2.0 &
              *(2.0*( (2.0*UKG(I,J,K))**2+(2.0*VKE(I,J,K))**2 &
                     +(2.0*WKD(I,J,K))**2+(UKE(I,J,K)+VKG(I,J,K))**2 &
                     +(UKD(I,J,K)+WKG(I,J,K))**2 &
@@ -7076,9 +7087,9 @@ IF(pier.EQ.1.0) THEN
     IMPLICIT NONE
 
 !C=================
-        IMAX=50.0   !ITO CHANGE
+        IMAX=100.0   !ITO CHANGE
         JMAX=44.0   !ITO CHANGE
-        KMAX=30.0   !ITO CHANGE
+        KMAX=70.0   !ITO CHANGE
 !C=================
 
         IF(DEPMODE.EQ.1.0) SLOPE=0.000872211d0   !ITO CHANGE   !SUMO23/03/23
@@ -8886,7 +8897,7 @@ IF(pier.EQ.1.0) THEN
             GOSAD=0.0
 
 !*************** DEPTH AND ETA BOUNDARY CONDITION ***************!
-
+        !周期境界条件(流下方向)
         DO 799 I=1,2
         DO 799 K=1,KMAX+4
 
@@ -8911,17 +8922,19 @@ IF(pier.EQ.1.0) THEN
             ELES(2,K)=ELES(IMAX+2,K)
 
  799    CONTINUE
-
+        !周期境界条件(横断方向)
         DO 520 K=1,2
         DO 520 I=1,IMAX+4
 
-            !ELES(I,K)=ELES(I,3)
-            !ELES(I,KMAX+2+K)=ELES(I,KMAX+2)
+            ELES(I,K)=ELES(I,3)
+            ELES(I,KMAX+2+K)=ELES(I,KMAX+2)
 
             ELES(I,KMAX+3)=ELES(I,3)    !ITO CHANGE
             ELES(I,KMAX+4)=ELES(I,4)    !ITO CHANGE
             ELES(I,1)=ELES(I,KMAX+1)    !ITO CHANGE
             ELES(I,2)=ELES(I,KMAX+2)    !ITO CHANGE
+
+            
 
  520    CONTINUE
 
@@ -9062,8 +9075,11 @@ IF(pier.EQ.1.0) THEN
         IF(GOSAD.LT.0.01) GO TO 901
 
  4000   CONTINUE
+ 
 
  901    CONTINUE
+
+ ! LOOPの終わり
 
         IF (naka.EQ.0.0) THEN
         WRITE(0,52) LOOP,GOSAD
@@ -9072,8 +9088,9 @@ IF(pier.EQ.1.0) THEN
 
         DO 355 K=1,KMAX+4
         DO 355 I=1,IMAX+4
-
+            !瞬間水深
             DEP(I,K)=HH(I,K)+ELES(I,K)
+            !瞬間水面位置
             !IF(DEP(I,K).LT.0.0) DEP(I,K)=DEPC
             ETA(I,K)=DEP(I,K)+GL(I,K)
 
